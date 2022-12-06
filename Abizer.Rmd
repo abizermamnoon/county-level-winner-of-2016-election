@@ -24,7 +24,11 @@ uber_fare <- read_csv("C:/Users/munee/Desktop/econ122/finalproject-mpra/uber.csv
 ```
 
 ```{r}
-uber_fare_extract <- uber_fare %>% mutate(pickup_time = str_extract(pickup_datetime,"[\\d]{1,2}:[\\d]{2}"), pickup_year = str_extract(pickup_datetime,"[\\d]{4}"),pickup_month_dash = str_extract(pickup_datetime, "-{1}[\\d]{2}-{1}"),pickup_month = str_extract(pickup_month_dash, "[\\d]{2}"),pickup_date_dash = str_extract(pickup_datetime, "-[\\d]{2}"), pickup_date = str_extract(pickup_date_dash, "[\\d]{2}"))
+uber_fare_mod <- uber_fare %>% mutate(pickup_time = str_extract(pickup_datetime,"[\\d]{1,2}:[\\d]{2}"), pickup_year = str_extract(pickup_datetime,"[\\d]{4}"),pickup_month_dash = str_extract(pickup_datetime, "-{1}[\\d]{2}-{1}"),pickup_month = str_extract(pickup_month_dash, "[\\d]{2}"),pickup_date_dash = str_extract(pickup_datetime, "-[\\d]{2}"), pickup_date = str_extract(pickup_date_dash, "[\\d]{2}"), pickup_latitude_mod = ifelse(pickup_latitude < -90 | pickup_latitude > 90, NA, pickup_latitude), pickup_longitude_mod = ifelse(pickup_longitude < -180 | pickup_longitude > 180, NA, pickup_longitude), dropoff_latitude_mod = ifelse(dropoff_latitude < -90 | dropoff_latitude > 90, NA, dropoff_latitude), dropoff_longitude_mod = ifelse(dropoff_longitude < -180 | dropoff_longitude > 180, NA, dropoff_longitude))
+```
+
+```{r}
+uber_fare_mod %>% select(fare_amount, passenger_count, pickup_time, pickup_year, pickup_month, pickup_date, pickup_latitude_mod, pickup_longitude_mod, dropoff_latitude_mod, dropoff_longitude_mod)
 ```
 
 
