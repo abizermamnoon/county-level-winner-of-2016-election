@@ -12,7 +12,7 @@ knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE,comment=NULL,message=FALSE, ech
 ```
 
 ```{r packageCheck, include=FALSE}
-mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr")  # what packages are needed?
+mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma")  # what packages are needed?
 packs <- installed.packages()   # find installed package list
 install.me <- mypacks[!(mypacks %in% packs[,"Package"])]  #what needs to be installed?
 if (length(install.me) >= 1) install.packages(install.me, repos = "http://cran.us.r-project.org")   # install (if needed)
@@ -31,4 +31,32 @@ uber_fare_mod <- uber_fare %>% mutate(pickup_time = str_extract(pickup_datetime,
 uber_fare_mod %>% select(fare_amount, passenger_count, pickup_time, pickup_year, pickup_month, pickup_date, pickup_latitude_mod, pickup_longitude_mod, dropoff_latitude_mod, dropoff_longitude_mod)
 ```
 
+```{r}
+library(pracma)
+
+dist_conversion <- function(lat1,lat2,lon1,lon2){
+    lon1 = deg2rad(lon1)
+    lon2 = deg2rad(lon2)
+    lat1 = deg2rad(lat1)
+    lat2 = deg2rad(lat2)
+      
+    # Haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+ 
+    c = 2 * asin(sqrt(a))
+    
+    # Radius of earth in kilometers. Use 3956 for miles
+    r = 3956
+      
+    # calculate the result
+    return(c * r)
+}
+
+```
+
+```{r}
+uber_dist <- uber_fare_mod %>% mutate(distance = dist_conversion(pickup_latitude_mod, pickup_longitude_mod, dropoff_latitude_mod, dropoff_longitude_mod)) %>% filter(distance > 1)
+```
 
