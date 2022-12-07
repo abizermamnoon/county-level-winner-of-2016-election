@@ -65,7 +65,7 @@ dist_conversion <- function(lat1,lat2,lon1,lon2){
 ```
 
 ```{r}
-uber_dist <- uber_fare_mod %>% mutate(distance = dist_conversion(pickup_latitude_mod, pickup_longitude_mod, dropoff_latitude_mod, dropoff_longitude_mod)) %>% filter(distance > 0)
+uber_dist <- uber_fare_mod %>% mutate(distance = dist_conversion(pickup_latitude_mod,dropoff_latitude_mod, pickup_longitude_mod, dropoff_longitude_mod)) %>% filter(distance > 0, fare_amount>7.19)
 
 glimpse(uber_dist)
 ```
