@@ -12,7 +12,7 @@ knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE,comment=NULL,message=FALSE, ech
 ```
 
 ```{r packageCheck, include=FALSE}
-mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma")  # what packages are needed?
+mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma","leaflet", "maps", "rgdal", "rgeos")  # what packages are needed?
 packs <- installed.packages()   # find installed package list
 install.me <- mypacks[!(mypacks %in% packs[,"Package"])]  #what needs to be installed?
 if (length(install.me) >= 1) install.packages(install.me, repos = "http://cran.us.r-project.org")   # install (if needed)
@@ -70,3 +70,30 @@ uber_dist <- uber_fare_mod %>% mutate(distance = dist_conversion(pickup_latitude
 glimpse(uber_dist)
 ```
 
+```{r}
+km_out <- kmeans(uber_dist[,7:10], centers = 3, nstart = 20)
+uber_dist <- uber_dist %>% mutate(cluster_assign = as.character(km_out$cluster))
+```
+
+```{r}
+uber_dist %>% ggplot(aes(x = scale(pickup_latitude_mod), y = scale(pickup_longitude_mod))) + geom_point(aes(color = cluster_assign)) 
+```
+
+```{r}
+uber_dist %>% group_by(cluster_assign) %>% dplyr::summarize(n = n()) 
+```
+
+
+```{r}
+states <- map_data("state")
+NY <- subset(states, region %in% c("new york", "new jersey"))
+
+NY_county <- subset(map_data("county"), region == c("new york", "new jersey"))
+
+ggplot(data = NY) + 
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "gray", color = "white") + 
+  coord_fixed(1.3) + geom_polygon(aes(x=long, y = lat), data = NY_county, fill = NA, color = "white") +
+  geom_polygon(aes(x=long, y = lat),color = "black", fill = NA) + geom_point(data = uber_dist, aes(x = pickup_longitude_mod, y = pickup_latitude_mod, color = cluster_assign)) 
+
+
+```

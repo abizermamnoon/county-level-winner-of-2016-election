@@ -97,3 +97,17 @@ Abizer, Matthew, Ping, Rosy
     $ dropoff_longitude_mod <dbl> -73.99951, -73.99471, -73.96256, -73.97308, -73.…
     $ dropoff_latitude_mod  <dbl> 40.72322, 40.75032, 40.77265, 40.76125, 40.77430…
     $ distance              <dbl> 1.045240, 1.526012, 3.127281, 2.778980, 7.284240…
+
+![](Abizer_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+    # A tibble: 3 × 2
+      cluster_assign     n
+      <chr>          <int>
+    1 1               7135
+    2 2              44385
+    3 3              68609
+
+    Warning in region == c("new york", "new jersey"): longer object length is not a
+    multiple of shorter object length
+
+![](Abizer_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
