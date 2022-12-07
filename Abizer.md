@@ -3,7 +3,7 @@ Final Team Project
 Abizer, Matthew, Ping, Rosy
 12/15/2022
 
-    # A tibble: 200,000 × 10
+    # A tibble: 195,330 × 10
        fare_amount passenger_count pickup_time pickup_year pickup_month pickup_date
              <dbl>           <dbl> <chr>       <chr>       <chr>        <chr>      
      1         7.5               1 19:52       2015        05           05         
@@ -13,9 +13,23 @@ Abizer, Matthew, Ping, Rosy
      5        16                 5 17:47       2014        08           08         
      6         4.9               1 02:27       2011        02           02         
      7        24.5               5 07:04       2014        10           10         
-     8         2.5               1 13:52       2012        12           12         
-     9         9.7               1 09:32       2012        02           02         
-    10        12.5               1 19:06       2012        03           03         
-    # … with 199,990 more rows, and 4 more variables: pickup_latitude_mod <dbl>,
+     8         9.7               1 09:32       2012        02           02         
+     9        12.5               1 19:06       2012        03           03         
+    10         6.5               1 17:32       2015        05           05         
+    # … with 195,320 more rows, and 4 more variables: pickup_latitude_mod <dbl>,
     #   pickup_longitude_mod <dbl>, dropoff_latitude_mod <dbl>,
     #   dropoff_longitude_mod <dbl>
+
+    Rows: 195,330
+    Columns: 11
+    $ fare_amount           <dbl> 7.5, 7.7, 12.9, 5.3, 16.0, 4.9, 24.5, 9.7, 12.5,…
+    $ passenger_count       <dbl> 1, 1, 1, 3, 5, 1, 5, 1, 1, 1, 5, 1, 1, 2, 1, 2, …
+    $ pickup_time           <chr> "19:52", "20:04", "21:45", "08:22", "17:47", "02…
+    $ pickup_year           <chr> "2015", "2009", "2009", "2009", "2014", "2011", …
+    $ pickup_month          <chr> "05", "07", "08", "06", "08", "02", "10", "02", …
+    $ pickup_date           <chr> "05", "07", "08", "06", "08", "02", "10", "02", …
+    $ pickup_longitude_mod  <dbl> -73.99982, -73.99435, -74.00504, -73.97612, -73.…
+    $ pickup_latitude_mod   <dbl> 40.73835, 40.72823, 40.74077, 40.79084, 40.74408…
+    $ dropoff_longitude_mod <dbl> -73.99951, -73.99471, -73.96256, -73.96532, -73.…
+    $ dropoff_latitude_mod  <dbl> 40.72322, 40.75032, 40.77265, 40.80335, 40.76125…
+    $ distance              <dbl> 9363.660, 9363.492, 9363.985, 9368.196, 9365.165…
