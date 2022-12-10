@@ -148,6 +148,8 @@ importance(rf)
 ```
 
 ```{r}
+uber_dist_2015 <- uber_dist_cleaner %>% filter(pickup_year == "2015")
+
 uber_dist_2015 <- uber_dist_2015 %>% mutate(prediction = predict(rf, type = "response"))
 
 uber_dist_2015 %>% summarize(accuracy = mean(prediction == fare_amount))
