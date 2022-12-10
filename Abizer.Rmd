@@ -102,8 +102,8 @@ ggplot(data = NY) +
   geom_polygon(aes(x=long, y = lat),color = "black", fill = NA) + geom_point(data = uber_dist, aes(x = pickup_longitude_mod, y = pickup_latitude_mod, color = cluster_assign)) 
 ```
 
-```{r}
 
+```{r}
 uber_dist %>% select(distance, fare_amount) %>% gather(key = variable, value = value, distance:fare_amount) %>% ggplot(aes(x = variable, y = value)) + geom_boxplot() + facet_wrap(~variable, scales="free")+ ggtitle("Boxplots of Distance & Fare_amount")
 
 #filter out distance outliers
@@ -120,11 +120,11 @@ Q3_f <- quantile(uber_dist$fare_amount, .75)
 IQR_f <- IQR(uber_dist$fare_amount)
 
 uber_dist_cleaner <- uber_dist_cleaner %>% filter(fare_amount > -1.9 & fare_amount < 26.9)
-
-
 ```
 
-```{r}
+
+
+
 #decision tree
 library(tree)
 # Fitting a tree to lat and long
@@ -134,35 +134,21 @@ fitted_tree <- tree(fare_amount~pickup_latitude_mod+pickup_longitude_mod+ dropof
 plot(fitted_tree)
 text(fitted_tree)
 summary(fitted_tree)
-```
 
 
-```{r}
-set.seed(7)
-n <- nrow(uber_dist_cleaner)
-train_index <- sample(1:n, size=round(.1*n))
-
-train <- uber_dist_cleaner %>% slice(train_index) %>% select(fare_amount, passenger_count, pickup_time, pickup_year, pickup_month, pickup_date, pickup_longitude_mod, pickup_latitude_mod, dropoff_longitude_mod, dropoff_latitude_mod, time_category, distance)
-
-test <- uber_dist_cleaner %>% slice(-train_index) %>% select(fare_amount, passenger_count, pickup_time, pickup_year, pickup_month, pickup_date, pickup_longitude_mod, pickup_latitude_mod, dropoff_longitude_mod, dropoff_latitude_mod, time_category, distance)
-```
 
 ```{r eval = FALSE}
 ptm <- proc.time()
 
-rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ passenger_count+pickup_month+pickup_date+pickup_time+distance, data=train, ntree = 200)
+uber_dist_2015 <- uber_dist_cleaner %>% filter(pickup_year == "2015")
 
+rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ passenger_count+pickup_month+pickup_date+pickup_time+distance, data=uber_dist_2015, ntree = 200)
 rf
-
-```
-
-
-```{r}
 importance(rf) 
 ```
 
 ```{r}
-train <- train %>% mutate(prediction = predict(rf, type = "response"))
+uber_dist_2015 <- uber_dist_2015 %>% mutate(prediction = predict(rf, type = "response"))
 
-train %>% summarize(accuracy = mean(prediction == fare_amount))
+uber_dist_2015 %>% summarize(accuracy = mean(prediction == fare_amount))
 ```
