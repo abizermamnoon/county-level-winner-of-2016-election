@@ -12,7 +12,7 @@ knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE,comment=NULL,message=FALSE, ech
 ```
 
 ```{r packageCheck, include=FALSE}
-mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma","leaflet", "maps", "rgdal", "rgeos","leaflet", "tree")  # what packages are needed?
+mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma","leaflet", "maps", "rgdal", "rgeos","leaflet", "tree","doParallel","foreach")  # what packages are needed?
 packs <- installed.packages()   # find installed package list
 install.me <- mypacks[!(mypacks %in% packs[,"Package"])]  #what needs to be installed?
 if (length(install.me) >= 1) install.packages(install.me, repos = "http://cran.us.r-project.org")   # install (if needed)
@@ -24,13 +24,18 @@ uber_fare <- read_csv("C:/Users/munee/Desktop/econ122/finalproject-mpra/uber.csv
 ```
 
 ```{r}
-uber_fare_mod <- uber_fare %>% mutate(pickup_time = str_extract(pickup_datetime,"[\\d]{1,2}:[\\d]{2}"), pickup_year = str_extract(pickup_datetime,"[\\d]{4}"), pickup_month_dash = str_extract(pickup_datetime, "-{1}[\\d]{2}-{1}"), pickup_month = str_extract(pickup_month_dash, "[\\d]{2}"), pickup_date_dash = str_extract(pickup_datetime, "-[\\d]{2}"), pickup_date = str_extract(pickup_date_dash, "[\\d]{2}"), pickup_longitude_mod = ifelse(pickup_longitude < -79.4554 | pickup_longitude > -71.4725, NA, pickup_longitude), pickup_latitude_mod = ifelse(pickup_latitude < 40.29400 | pickup_latitude > 45.00420, NA, pickup_latitude), dropoff_longitude_mod = ifelse(dropoff_longitude < -79.4554 | dropoff_longitude > -71.4725, NA, dropoff_longitude), dropoff_latitude_mod = ifelse(dropoff_latitude < 40.29400 | dropoff_latitude > 45.00420, NA, dropoff_latitude) ) %>% na.omit()
+Q1_f <- quantile(uber_fare$fare_amount, .33)
+Q2_f <- quantile(uber_fare$fare_amount, .66)
+```
+
+```{r}
+uber_fare_mod <- uber_fare %>% mutate(pickup_time = str_extract(pickup_datetime,"[\\d]{1,2}:[\\d]{2}"), pickup_year = str_extract(pickup_datetime,"[\\d]{4}"), pickup_month_dash = str_extract(pickup_datetime, "-{1}[\\d]{2}-{1}"), pickup_month = str_extract(pickup_month_dash, "[\\d]{2}"), pickup_date_dash = str_extract(pickup_datetime, "-[\\d]{2}"), pickup_date = str_extract(pickup_date_dash, "[\\d]{2}"), pickup_longitude_mod = ifelse(pickup_longitude < -79.4554 | pickup_longitude > -71.4725, NA, pickup_longitude), pickup_latitude_mod = ifelse(pickup_latitude < 40.29400 | pickup_latitude > 45.00420, NA, pickup_latitude), dropoff_longitude_mod = ifelse(dropoff_longitude < -79.4554 | dropoff_longitude > -71.4725, NA, dropoff_longitude), dropoff_latitude_mod = ifelse(dropoff_latitude < 40.29400 | dropoff_latitude > 45.00420, NA, dropoff_latitude), fare_range = ifelse(fare_amount < 9.5, "Low", "Medium"), fare_amount_range = ifelse(fare_amount > 13.8, "Expensive", fare_range ) ) %>% na.omit()
 
 
 ```
 
 ```{r}
-uber_fare_mod <- filter_if(uber_fare_mod, is.numeric, all_vars((.) != 0)) %>% select(fare_amount, passenger_count, pickup_time, pickup_year, pickup_month, pickup_date, pickup_longitude_mod, pickup_latitude_mod, dropoff_longitude_mod, dropoff_latitude_mod)
+uber_fare_mod <- filter_if(uber_fare_mod, is.numeric, all_vars((.) != 0)) %>% select(fare_amount, fare_amount_range, passenger_count, pickup_time, pickup_year, pickup_month, pickup_date, pickup_longitude_mod, pickup_latitude_mod, dropoff_longitude_mod, dropoff_latitude_mod)
 
 ```
 
@@ -70,7 +75,7 @@ km_out <- kmeans(uber_dist[,7:10], centers = 4, nstart = 20)
 uber_dist <- uber_dist %>% mutate(cluster_assign = as.character(km_out$cluster))
 ```
 
-```{r}
+```{r eval = "FALSE"}
 k<- 1:10
 
 set.seed(11)
@@ -100,7 +105,6 @@ ggplot(data = NY) +
 ```
 
 ```{r}
-?quantile()
 #filter out distance outliers
 Q1 <- quantile(uber_dist$distance, .0001)
 Q3 <- quantile(uber_dist$distance, .9999)
@@ -133,6 +137,27 @@ text(fitted_tree)
 summary(fitted_tree)
 ```
 
+
+```{r}
+set.seed(7)
+n <- nrow(uber_dist_clean)
+train_index <- sample(1:n, size=round(.1*n))
+
+train <- uber_dist_clean %>% slice(train_index) %>% select(passenger_count, pickup_time, pickup_year, pickup_month, pickup_date, pickup_longitude_mod, pickup_latitude_mod, dropoff_longitude_mod, dropoff_latitude_mod, fare_amount, distance, fare_amount_range)
+
+test <- uber_dist_clean %>% slice(-train_index) %>% select(passenger_count, pickup_time, pickup_year, pickup_month, pickup_date, pickup_longitude_mod, pickup_latitude_mod, dropoff_longitude_mod, dropoff_latitude_mod, distance, fare_amount, fare_amount_range)
+```
+
+```{r eval = FALSE}
+ptm <- proc.time()
+
+rf <- randomForest(fare_amount_range ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ passenger_count+pickup_month+pickup_date+pickup_time+distance, data=train, ntree = 200)
+
+proc.time() - ptm
+
+stopCluster(cl)
+```
+
 ```{r}
 #random_forest model
 
@@ -140,5 +165,11 @@ rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropo
 ```
 
 ```{r}
-importance(rf)
+importance(rf) 
+```
+
+```{r}
+train <- train %>% mutate(prediction = predict(rf, type = "response"))
+
+train %>% summarize(accuracy = mean(prediction == fare_amount))
 ```
