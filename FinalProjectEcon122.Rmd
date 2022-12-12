@@ -1,0 +1,220 @@
+---
+title: "Final Team Project" 
+author: "Abizer, Matthew, Ping, Rosy"
+date: "12/15/2022"
+output: 
+  github_document:
+    pandoc_args: --webtex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE,comment=NULL,message=FALSE, echo = FALSE, include=TRUE, fig.width = 9, fig.height = 4) #This code chunk ensures that there are no commands in output file.
+```
+
+```{r packageCheck, include=FALSE}
+mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma","leaflet", "maps", "rgdal", "rgeos","leaflet", "tree","doParallel","foreach")  # what packages are needed?
+packs <- installed.packages()   # find installed package list
+install.me <- mypacks[!(mypacks %in% packs[,"Package"])]  #what needs to be installed?
+if (length(install.me) >= 1) install.packages(install.me, repos = "http://cran.us.r-project.org")   # install (if needed)
+lapply(mypacks, library, character.only=TRUE)  # load all packages
+```
+
+
+```{r}
+Q1_f <- quantile(uber_fare$fare_amount, .33)
+Q2_f <- quantile(uber_fare$fare_amount, .66)
+```
+
+```{r}
+#data wrangling for date-time, new york coordinates, categorizing times of day 
+uber_fare_mod <- uber %>% mutate(pickup_time = str_extract(pickup_datetime,"[\\d]{1,2}:[\\d]{2}"), pickup_year = str_extract(pickup_datetime,"[\\d]{4}"), pickup_month_dash = str_extract(pickup_datetime, "-{1}[\\d]{2}-{1}"), pickup_month = str_extract(pickup_month_dash, "[\\d]{2}"), pickup_date_dash = str_extract(pickup_datetime, "-[\\d]{2}"), pickup_date = str_extract(pickup_date_dash, "[\\d]{2}"), pickup_longitude_mod = ifelse(pickup_longitude < -79.4554 | pickup_longitude > -71.4725, NA, pickup_longitude), pickup_latitude_mod = ifelse(pickup_latitude < 40.29400 | pickup_latitude > 45.00420, NA, pickup_latitude), dropoff_longitude_mod = ifelse(dropoff_longitude < -79.4554 | dropoff_longitude > -71.4725, NA, dropoff_longitude), dropoff_latitude_mod = ifelse(dropoff_latitude < 40.29400 | dropoff_latitude > 45.00420, NA, dropoff_latitude), time_range = ifelse(pickup_time < 12:00, "Morning", "Afternoon"), time_category = ifelse(pickup_time > 18:00, "Night", time_range ) ) %>% na.omit()
+```
+
+```{r}
+#filtering out uber fares that are equal to 0
+uber_fare_mod <- filter_if(uber_fare_mod, is.numeric, all_vars((.) != 0)) %>% select(fare_amount, passenger_count, pickup_time, pickup_year, pickup_month, pickup_date, pickup_longitude_mod, pickup_latitude_mod, dropoff_longitude_mod, dropoff_latitude_mod, time_category)
+
+```
+
+```{r}
+#calculating the distance for each ride 
+library(pracma)
+
+dist_conversion <- function(lat1,lat2,lon1,lon2){
+    lon1 = deg2rad(lon1)
+    lon2 = deg2rad(lon2)
+    lat1 = deg2rad(lat1)
+    lat2 = deg2rad(lat2)
+      
+    # Haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
+ 
+    c = 2 * asin(sqrt(a))
+    
+    # Radius of earth in kilometers. Use 3956 for miles
+    r = 3956
+      
+    # calculate the result
+    return(c * r)
+}
+
+```
+
+```{r}
+uber_dist <- uber_fare_mod %>% mutate(distance = dist_conversion(pickup_latitude_mod,dropoff_latitude_mod, pickup_longitude_mod, dropoff_longitude_mod)) %>% filter(distance > 0, fare_amount>7.19)
+
+```
+
+```{r}
+#making clusters to group locations within new york city 
+set.seed(7)
+km_out <- kmeans(uber_dist[,7:10], centers = 4, nstart = 20)
+uber_dist <- uber_dist %>% mutate(cluster_assign = as.character(km_out$cluster))
+```
+
+```{r eval = "FALSE"}
+#calculating what number of groups to cluster by 
+k<- 1:10
+
+set.seed(11)
+
+total.Wss <- sapply(k, function(x) kmeans(uber_dist[,7:10], centers=x, nstart=20)$tot.withinss)
+
+ggplot(data_frame(total.Wss, k), aes(x=k,y=total.Wss)) + geom_point() + geom_line() + scale_x_continuous(breaks=1:10)
+```
+
+```{r}
+#cluster assignment stats 
+uber_dist %>% group_by(cluster_assign) %>% dplyr::summarize(n = n()) 
+```
+
+
+```{r}
+#plotting 
+states <- map_data("state")
+NY <- subset(states, region %in% c("new york", "new jersey"))
+
+NY_county <- subset(map_data("county"), region == c("new york", "new jersey"))
+
+ggplot(data = NY) + 
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "gray", color = "white") + 
+  coord_fixed(1.3) + geom_polygon(aes(x=long, y = lat), data = NY_county, fill = NA, color = "white") +
+  geom_polygon(aes(x=long, y = lat),color = "black", fill = NA) + geom_point(data = uber_dist, aes(x = pickup_longitude_mod, y = pickup_latitude_mod, color = cluster_assign)) 
+```
+
+
+```{r}
+uber_dist %>% select(distance, fare_amount) %>% gather(key = variable, value = value, distance:fare_amount) %>% ggplot(aes(x = variable, y = value)) + geom_boxplot() + facet_wrap(~variable, scales="free")+ ggtitle("Boxplots of Distance & Fare_amount")
+
+#filter out distance outliers
+Q1 <- quantile(uber_dist$distance, .25)
+Q3 <- quantile(uber_dist$distance, .75)
+IQR <- IQR(uber_dist$distance)
+
+
+uber_dist_cleaner <- uber_dist %>% filter(distance < 6.306145 & distance > -1.57)
+
+#filter out fare_amount outliers
+Q1_f <- quantile(uber_dist$fare_amount, .25)
+Q3_f <- quantile(uber_dist$fare_amount, .75)
+IQR_f <- IQR(uber_dist$fare_amount)
+
+uber_dist_cleaner <- uber_dist_cleaner %>% filter(fare_amount > -1.9 & fare_amount < 26.9)
+```
+
+
+
+```{r}
+#decision tree
+library(tree)
+# Fitting a tree to lat and long
+fitted_tree <- tree(fare_amount~pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ distance + passenger_count+pickup_month+pickup_date+pickup_time, uber_dist_cleaner)
+
+# Draw a diagram of the tree structure
+plot(fitted_tree)
+text(fitted_tree)
+summary(fitted_tree)
+```
+
+
+```{r eval = FALSE}
+ptm <- proc.time()
+
+uber_dist_2015 <- uber_dist_cleaner %>% filter(pickup_year == "2015")
+
+rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ passenger_count+pickup_month+pickup_date+pickup_time+distance, data=uber_dist_2015, ntree = 200)
+rf
+importance(rf) 
+```
+
+```{r}
+uber_dist_2015 <- uber_dist_cleaner %>% filter(pickup_year == "2015")
+
+uber_dist_2015 <- uber_dist_2015 %>% mutate(prediction = predict(rf, type = "response"))
+
+uber_dist_2015 %>% summarize(accuracy = mean(prediction == fare_amount))
+```
+
+```{r}
+uber_dist_2014 <- uber_dist_cleaner %>% filter(pickup_year == "2014")
+
+uber_dist_2014_morning <- uber_dist_2014 %>% filter(time_category == "Morning") 
+
+uber_dist_2014_afternoon <- uber_dist_2014 %>% filter(time_category == "Afternoon") 
+
+uber_dist_2014_night <- uber_dist_2014 %>% filter(time_category == "Night") 
+```
+
+```{r}
+#Random Forest on 2014 morning data 
+rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ passenger_count+pickup_time+distance, data=uber_dist_2014_morning, ntree = 500)
+rf
+importance(rf) 
+
+uber_dist_2014_morning <- uber_dist_2014_morning %>% mutate(prediction = round(predict(rf, type = "response"))) 
+```
+
+```{r}
+ggplot(data=uber_dist_2014_morning,aes(x=prediction,y=fare_amount)) + geom_point() + geom_abline(intercept=0,slope=1,color="red") + labs(x="Predicted fares", y="Actual Fares", title="Predicted fares vs Actual Fares")
+```
+
+
+```{r}
+#Random Forest on 2014 afternoon data 
+rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ passenger_count+pickup_time+distance, data=uber_dist_2014_afternoon, ntree = 500)
+rf
+importance(rf) 
+
+uber_dist_2014_afternoon <- uber_dist_2014_afternoon %>% mutate(prediction = round(predict(rf, type = "response"))) 
+```
+
+
+```{r}
+ggplot(data=uber_dist_2014_morning,aes(x=prediction,y=fare_amount)) + geom_point() + 
+  geom_abline(intercept=0,slope=1, color="red") + labs(x="Predicted fares", y="Actual Fares", title="Predicted fares vs Actual Fares")
+```
+
+
+```{r}
+#Random Forest on 2014 night data 
+rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ passenger_count+pickup_time+distance, data=uber_dist_2014_night, ntree = 500)
+rf
+importance(rf) 
+
+uber_dist_2014_night <- uber_dist_2014_night %>% mutate(prediction = round(predict(rf, type = "response"))) 
+```
+
+```{r}
+ggplot(data=uber_dist_2014_night,aes(x=prediction,y=fare_amount)) + geom_point() + 
+  geom_abline(intercept=0,slope=1, color="red") + labs(x="Predicted fares", y="Actual Fares", title="Predicted fares vs Actual Fares")
+```
+
+```{r}
+#uber_dist_2014_morning <- uber_dist_2014_morning %>%  separate(pickup_time, into=c("Hour", "Minute"), sep=":", convert=TRUE)
+uber_dist_2014_morning %>% filter(distance<2) %>% 
+  mutate(diff_from_base_fare=(fare_amount-7.5)) %>% group_by(Hour) %>%
+  summarize(avg_diff_from_base=mean(diff_from_base_fare))  
+```
+
