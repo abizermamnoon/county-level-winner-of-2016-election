@@ -24,7 +24,7 @@ In our final project, we want to predict Uber fares in New York State using the 
 uber_fare <- read_csv("C:/Users/munee/Desktop/econ122/finalproject-mpra/uber.csv") #Data is stored in uber_csv
 ```
 
-We first cleaned the data. Our original dataset had a column - pickup_datetime - which stored the date and time of pickup. We chose to break down this variable into separate columns that extracted the pickup time, year, date and month. We then filtered the latitude and longitude co-ordinates to fit those of New York state. We also included a time category column that categorized the pickup times into morning, afternoon and night. Finally, we created a distance variable that computes the distance between the latitudes and longitudes of the pickup and dropoff locations. To get a better idea of our final product, we have attached the first five rows of our cleaned dataset below.
+We first cleaned the data. Our original dataset had a column - pickup_datetime - which stored the date and time of pickup. We chose to break down this variable into separate columns that extracted the pickup time, year, date and month. We then filtered the latitude and longitude co-ordinates to fit those of New York state. We also included a time category column that categorized the pickup times into morning, afternoon and night. Finally, we created a distance variable that computes the distance between the latitudes and longitudes of the pickup and dropoff locations. 
 
 ```{r}
 Q1_f <- quantile(uber_fare$fare_amount, .33) #compute 33% of data
