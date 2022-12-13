@@ -18,10 +18,13 @@ install.me <- mypacks[!(mypacks %in% packs[,"Package"])]  #what needs to be inst
 if (length(install.me) >= 1) install.packages(install.me, repos = "http://cran.us.r-project.org")   # install (if needed)
 lapply(mypacks, library, character.only=TRUE)  # load all packages
 ```
+In our final project, we want to predict Uber fares in New York State using the dataset below which we found on Kaggle. 
 
 ```{r}
 uber_fare <- read_csv("C:/Users/munee/Desktop/econ122/finalproject-mpra/uber.csv") #Data is stored in uber_csv
 ```
+
+We first cleaned the data. Our original dataset had a column - pickup_datetime - which stored the date and time of pickup. We chose to break down this variable into separate columns that extracted the pickup time, year, date and month. We then filtered the latitude and longitude co-ordinates to fit those of New York state. We also included a time category column that categorized the pickup times into morning, afternoon and night. Finally, we created a distance variable that computes the distance between the latitudes and longitudes of the pickup and dropoff locations. To get a better idea of our final product, we have attached the first five rows of our cleaned dataset below.
 
 ```{r}
 Q1_f <- quantile(uber_fare$fare_amount, .33) #compute 33% of data
@@ -36,6 +39,7 @@ uber_fare_mod <- uber_fare %>% mutate(pickup_time = str_extract(pickup_datetime,
 ```{r}
 uber_fare_mod <- filter_if(uber_fare_mod, is.numeric, all_vars((.) != 0)) %>% select(fare_amount, passenger_count, pickup_time, pickup_year, pickup_month, pickup_date, pickup_longitude_mod, pickup_latitude_mod, dropoff_longitude_mod, dropoff_latitude_mod, time_category)
 #created a new dataframe that only includes the variables that we want in our project from the bigger dataframe
+
 ```
 
 ```{r}
@@ -66,46 +70,8 @@ dist_conversion <- function(lat1,lat2,lon1,lon2){
 ```{r}
 uber_dist <- uber_fare_mod %>% mutate(distance = dist_conversion(pickup_latitude_mod,dropoff_latitude_mod, pickup_longitude_mod, dropoff_longitude_mod)) %>% filter(distance > 0, fare_amount>7.19)
 # added the distance variable into our dataframe
+uber_dist %>% head(5)
 ```
-
-```{r eval = "FALSE"}
-k<- 1:10
-
-set.seed(11)
-
-total.Wss <- sapply(k, function(x) kmeans(uber_dist[,7:10], centers=x, nstart=20)$tot.withinss)
-
-ggplot(data_frame(total.Wss, k), aes(x=k,y=total.Wss)) + geom_point() + geom_line() + scale_x_continuous(breaks=1:10)
-
-#graphed total within cluster variation against k to compute optimal k
-```
-
-```{r}
-set.seed(7)
-km_out <- kmeans(uber_dist[,7:10], centers = 4, nstart = 20) #ran the k-means model to create 4 clusters of data using 20 random starting points
-uber_dist <- uber_dist %>% mutate(cluster_assign = as.character(km_out$cluster))
-# added the cluster assigned to each row into the dataframe
-```
-
-
-
-```{r}
-uber_dist %>% group_by(cluster_assign) %>% dplyr::summarize(n = n()) #summary results of number of data points in each cluster
-```
-
-
-```{r}
-states <- map_data("state")
-NY <- subset(states, region %in% c("new york", "new jersey"))
-
-NY_county <- subset(map_data("county"), region == c("new york", "new jersey"))
-
-ggplot(data = NY) + 
-  geom_polygon(aes(x = long, y = lat, group = group), fill = "gray", color = "white") + 
-  coord_fixed(1.3) + geom_polygon(aes(x=long, y = lat), data = NY_county, fill = NA, color = "white") +
-  geom_polygon(aes(x=long, y = lat),color = "black", fill = NA) + geom_point(data = uber_dist, aes(x = pickup_longitude_mod, y = pickup_latitude_mod, color = cluster_assign)) #plotted a map of New York state which shows the distribution of clusters
-```
-
 
 ```{r}
 uber_dist %>% select(distance, fare_amount) %>% gather(key = variable, value = value, distance:fare_amount) %>% ggplot(aes(x = variable, y = value)) + geom_boxplot() + facet_wrap(~variable, scales="free")+ ggtitle("Boxplots of Distance & Fare_amount") # drew a boxplot of distances and fare amounts in boxplot
@@ -125,6 +91,45 @@ IQR_f <- IQR(uber_dist$fare_amount)
 
 uber_dist_cleaner <- uber_dist_cleaner %>% filter(fare_amount > -1.9 & fare_amount < 26.9)
 ```
+
+```{r eval = "FALSE"}
+k<- 1:10
+
+set.seed(11)
+
+total.Wss <- sapply(k, function(x) kmeans(uber_dist_cleaner[,7:10], centers=x, nstart=20)$tot.withinss)
+
+ggplot(data_frame(total.Wss, k), aes(x=k,y=total.Wss)) + geom_point() + geom_line() + scale_x_continuous(breaks=1:10)
+
+#graphed total within cluster variation against k to compute optimal k
+```
+
+```{r}
+set.seed(7)
+km_out <- kmeans(uber_dist_cleaner[,7:10], centers = 4, nstart = 20) #ran the k-means model to create 4 clusters of data using 20 random starting points
+uber_dist_cleaner <- uber_dist_cleaner %>% mutate(cluster_assign = as.character(km_out$cluster))
+# added the cluster assigned to each row into the dataframe
+```
+
+
+
+```{r}
+uber_dist_cleaner %>% group_by(cluster_assign) %>% dplyr::summarize(n = n()) #summary results of number of data points in each cluster
+```
+
+
+```{r}
+states <- map_data("state")
+NY <- subset(states, region %in% c("new york", "new jersey"))
+
+NY_county <- subset(map_data("county"), region == c("new york", "new jersey"))
+
+ggplot(data = NY) + 
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "gray", color = "white") + 
+  coord_fixed(1.3) + geom_polygon(aes(x=long, y = lat), data = NY_county, fill = NA, color = "white") +
+  geom_polygon(aes(x=long, y = lat),color = "black", fill = NA) + geom_point(data = uber_dist_cleaner, aes(x = pickup_longitude_mod, y = pickup_latitude_mod, color = cluster_assign)) #plotted a map of New York state which shows the distribution of clusters
+```
+
 
 
 
