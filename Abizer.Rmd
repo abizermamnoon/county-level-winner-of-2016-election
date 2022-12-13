@@ -70,7 +70,6 @@ dist_conversion <- function(lat1,lat2,lon1,lon2){
 ```{r}
 uber_dist <- uber_fare_mod %>% mutate(distance = dist_conversion(pickup_latitude_mod,dropoff_latitude_mod, pickup_longitude_mod, dropoff_longitude_mod)) %>% filter(distance > 0, fare_amount>7.19)
 # added the distance variable into our dataframe
-uber_dist %>% head(5)
 ```
 
 ```{r}
@@ -144,15 +143,6 @@ plot(fitted_tree)
 text(fitted_tree)
 summary(fitted_tree)
 
-
-```{r}
-uber_dist_2015 <- uber_dist_cleaner %>% filter(pickup_year == "2015")
-
-uber_dist_2015 <- uber_dist_2015 %>% mutate(prediction = predict(rf, type = "response"))
-
-uber_dist_2015 %>% summarize(accuracy = mean(prediction == fare_amount))
-```
-
 ```{r}
 uber_dist_2014 <- uber_dist_cleaner %>% filter(pickup_year == "2014")
 
@@ -164,12 +154,17 @@ uber_dist_2014_night <- uber_dist_2014 %>% filter(time_category == "Night")
 ```
 
 ```{r}
+library(randomForest)
 #Random Forest on 2014 morning data 
-rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ passenger_count+pickup_time+distance, data=uber_dist_2014_morning, ntree = 500)
-rf
-importance(rf) 
+rf_morn <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ passenger_count+pickup_time+distance, data=uber_dist_2014_morning, ntree = 500)
+rf_morn
+importance(rf_morn) 
 
-uber_dist_2014_morning <- uber_dist_2014_morning %>% mutate(prediction = round(predict(rf, type = "response"))) 
+uber_dist_2014_morning <- uber_dist_2014_morning %>% mutate(prediction = round(predict(rf_morn, type = "response"))) 
+```
+
+```{r}
+sqrt(rf$mse[length(rf$mse)])
 ```
 
 ```{r}
