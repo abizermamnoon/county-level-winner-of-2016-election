@@ -11,6 +11,12 @@ output:
 knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE,comment=NULL,message=FALSE, echo = FALSE, include=TRUE, fig.width = 9, fig.height = 4) #This code chunk ensures that there are no commands in output file.
 ```
 
+```{r}
+install.packages("rlang")
+library(rlang)
+sessionInfo()
+```
+
 ```{r packageCheck, include=FALSE}
 mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma","leaflet", "maps", "rgdal", "rgeos","leaflet", "tree","doParallel","foreach")  # what packages are needed?
 packs <- installed.packages()   # find installed package list
