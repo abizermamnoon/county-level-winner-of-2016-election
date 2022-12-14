@@ -11,11 +11,6 @@ output:
 knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE,comment=NULL,message=FALSE, echo = FALSE, include=TRUE, fig.width = 9, fig.height = 4) #This code chunk ensures that there are no commands in output file.
 ```
 
-```{r}
-install.packages("rlang")
-library(rlang)
-sessionInfo()
-```
 
 ```{r packageCheck, include=FALSE}
 mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma","leaflet", "maps", "rgdal", "rgeos","leaflet", "tree","doParallel","foreach")  # what packages are needed?
@@ -120,6 +115,8 @@ uber_dist_cleaner <- uber_dist_cleaner %>% mutate(cluster_assign = as.character(
 
 ```{r}
 uber_dist_cleaner %>% group_by(cluster_assign) %>% dplyr::summarize(n = n()) #summary results of number of data points in each cluster
+time_group <- uber_dist_cleaner %>% group_by(pickup_time) %>% dplyr::summarize(n = n())
+left_join(uber_dist_cleaner, time_group, by = c("pickup_time"="pickup_time" ))
 ```
 
 
