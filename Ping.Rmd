@@ -11,14 +11,8 @@ output:
 knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE,comment=NULL,message=FALSE, echo = FALSE, include=TRUE, fig.width = 9, fig.height = 4) #This code chunk ensures that there are no commands in output file.
 ```
 
-```{r}
-install.packages("rlang")
-library(rlang)
-sessionInfo()
-```
-
 ```{r packageCheck, include=FALSE}
-mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma","leaflet", "maps", "rgdal", "rgeos","leaflet", "tree","doParallel","foreach")  # what packages are needed?
+mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma","leaflet", "maps", "rgdal", "rgeos","leaflet", "tree","doParallel","foreach", "ggmap","geosphere")  # what packages are needed?
 packs <- installed.packages()   # find installed package list
 install.me <- mypacks[!(mypacks %in% packs[,"Package"])]  #what needs to be installed?
 if (length(install.me) >= 1) install.packages(install.me, repos = "http://cran.us.r-project.org")   # install (if needed)
@@ -157,11 +151,33 @@ register_google(key = "AIzaSyB-C3liKGZzMpScV_lEwVlpY94-FB-NUtg", write = TRUE)
 
 base_map_pickup <- ggmap(get_googlemap(center = c(-73.958285, 40.713000), zoom = 11))
 
-base_map_pickup + geom_point(data = uber_dist_2015, aes(x = pickup_longitude_mod, y = pickup_latitude_mod, color=cluster_pickup),size = 1)
+base_map_pickup + geom_point(data = uber_dist_2015, aes(x = pickup_longitude_mod, y = pickup_latitude_mod, color=cluster_pickup),size = 1) 
 
 base_map_dropoff <- ggmap(get_googlemap(center = c(-73.908285, 40.713000), zoom = 11))
 
 base_map_dropoff + geom_point(data = uber_dist_2015, aes(x = dropoff_longitude_mod, y = dropoff_latitude_mod, color = cluster_dropoff), size = 1)
+```
+```{r}
+#plot where the uber rides are going depending on pickup cluster (represented by black)
+
+base_map_path<- ggmap(get_googlemap(center = c(-73.958285, 40.723000), zoom = 11))
+
+
+start_point <- uber_dist_2015[, c("pickup_longitude_mod", "pickup_latitude_mod")]
+end_point <- uber_dist_2015[, c("dropoff_longitude_mod", "dropoff_latitude_mod")]
+base_map_path + 
+  geom_point(data = uber_dist_2015, aes(x = dropoff_longitude_mod, y = dropoff_latitude_mod, color= cluster_dropoff), size = 2, alpha = 1) +
+    geom_point(data = uber_dist_2015, aes(x = pickup_longitude_mod, y = pickup_latitude_mod), size = 1, alpha = 0.5) + facet_wrap(~cluster_pickup)
+  
+```
+```{r}
+uber_dist_2015 %>% group_by(cluster_pickup) %>% dplyr::summarize(n = n())
+
+```
+```{r}
+#calculate direction of uber ride in degrees
+uber_dist_2015$direction <- atan2(sin( uber_dist_2015$dropoff_longitude_mod - uber_dist_2015$pickup_longitude_mod), 
+                           cos( uber_dist_2015$dropoff_latitude_mod - uber_dist_2015$pickup_latitude_mod ))
 ```
 
 ```{r}
@@ -178,16 +194,12 @@ ggplot(data=uber_dist_2015, aes(x=distance, y = fare_amount)) + geom_point() + f
 ```
 
 ```{r}
-
-uber_dist_2015 <- uber_dist_2015 %>% mutate(prediction = round(predict(rf, type = "response"))) 
-#graph our predicted fare prices against actual fare prices using facet wrap for time categories
-ggplot(data=uber_dist_2015, aes(x=fare_amount, y = prediction)) + geom_point() + facet_wrap(~time_category) + geom_smooth(method = "lm")
-```
-
-```{r}
 #add count of each unique time as a new column, n
 uber_dist_2015 <- uber_dist_cleaner %>% filter(pickup_year == "2015") 
 
+uber_dist_2015 <- uber_dist_2015 %>% mutate(fare_amount_round = round(fare_amount, 0))
+
+uber_dist_2015 %>% mutate(prediction = round(predict(rf, type = "response"),0)) %>% summarize(accuracy = mean(prediction == fare_amount_round))
 
 
 time_group <- uber_dist_2015 %>% group_by(pickup_time) %>% dplyr::summarize(n = n())
@@ -198,9 +210,17 @@ uber_dist_2015 <- left_join(time_group, uber_dist_2015, by = "pickup_time")
 ```
 
 ```{r}
+
+uber_dist_2015 <- uber_dist_2015 %>% mutate(prediction = round(predict(rf, type = "response"))) 
+#graph our predicted fare prices against actual fare prices using facet wrap for time categories
+ggplot(data=uber_dist_2015, aes(x=fare_amount, y = prediction)) + geom_point() + facet_wrap(~time_category) + geom_smooth(method = "lm")
+
+uber_dist_2015 %>% mutate(prediction = round(predict(rf, type = "response"),0)) %>% summarize(accuracy = mean(prediction == fare_amount_round))
+```
+```{r}
 #random forest on new predictors
 
-rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ passenger_count+pickup_time+distance+cluster_pickup+cluster_dropoff+pickup_month+pickup_date+n, data=uber_dist_2015, ntree = 500, mtry=5)
+rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ pickup_time+distance+direction, data=uber_dist_2015, ntree = 500, mtry=3)
 
 ```
 ```{r}
