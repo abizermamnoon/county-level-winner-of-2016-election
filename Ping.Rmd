@@ -132,8 +132,9 @@ uber_dist_cleaner <- uber_dist_cleaner %>% mutate(cluster_dropoff = as.character
 
 
 ```{r}
-uber_dist_cleaner %>% group_by(cluster_dropoff) %>% dplyr::summarize(n = n()) #summary results of number of data points in each cluster
-uber_dist_cleaner %>% group_by(cluster_pickup) %>% dplyr::summarize(n = n())
+uber_dist_2015 <- uber_dist_cleaner %>% filter(pickup_year=="2015")
+uber_dist_2015 %>% group_by(cluster_dropoff) %>% dplyr::summarize(n = n()) #summary results of number of data points in each cluster
+uber_dist_2015 %>% group_by(cluster_pickup) %>% dplyr::summarize(n = n())
 ```
 
 ```{r}
@@ -149,18 +150,18 @@ uber_dist_2015
 #based on the k means clustering, we can see that horizontal coordinates(longitude) is less important that vertical coordinates(latitude). Therefore, traveling within clusters has less impact on fare amount, and traveling between clusters has a bigger impact on fare amount. 
 register_google(key = "AIzaSyB-C3liKGZzMpScV_lEwVlpY94-FB-NUtg", write = TRUE)
 
-base_map_pickup <- ggmap(get_googlemap(center = c(-73.958285, 40.713000), zoom = 11))
+base_map_pickup <- ggmap(get_googlemap(center = c(-73.958285, 40.713000), zoom = 10))
 
 base_map_pickup + geom_point(data = uber_dist_2015, aes(x = pickup_longitude_mod, y = pickup_latitude_mod, color=cluster_pickup),size = 1) 
 
-base_map_dropoff <- ggmap(get_googlemap(center = c(-73.908285, 40.713000), zoom = 11))
+base_map_dropoff <- ggmap(get_googlemap(center = c(-73.908285, 40.713000), zoom = 10))
 
 base_map_dropoff + geom_point(data = uber_dist_2015, aes(x = dropoff_longitude_mod, y = dropoff_latitude_mod, color = cluster_dropoff), size = 1)
 ```
 ```{r}
 #plot where the uber rides are going depending on pickup cluster (represented by black)
 
-base_map_path<- ggmap(get_googlemap(center = c(-73.958285, 40.723000), zoom = 11))
+base_map_path<- ggmap(get_googlemap(center = c(-73.958285, 40.723000), zoom = 10))
 
 
 start_point <- uber_dist_2015[, c("pickup_longitude_mod", "pickup_latitude_mod")]
@@ -192,6 +193,16 @@ ggplot(data=uber_dist_2015, aes(x=distance)) + geom_histogram() +  scale_x_conti
 ggplot(data=uber_dist_2015, aes(x=distance, y = fare_amount)) + geom_point() + facet_wrap(~time_category) + geom_smooth(method = "lm")
 
 ```
+```{r}
+#random forest on new predictors
+
+rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ pickup_time+distance+direction, data=uber_dist_2015, ntree = 500, mtry=3)
+
+```
+```{r}
+rf
+importance(rf)
+```
 
 ```{r}
 #add count of each unique time as a new column, n
@@ -217,15 +228,6 @@ ggplot(data=uber_dist_2015, aes(x=fare_amount, y = prediction)) + geom_point() +
 
 uber_dist_2015 %>% mutate(prediction = round(predict(rf, type = "response"),0)) %>% summarize(accuracy = mean(prediction == fare_amount_round))
 ```
-```{r}
-#random forest on new predictors
 
-rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropoff_latitude_mod+ dropoff_longitude_mod+ pickup_time+distance+direction, data=uber_dist_2015, ntree = 500, mtry=3)
-
-```
-```{r}
-rf
-importance(rf)
-```
 
 
