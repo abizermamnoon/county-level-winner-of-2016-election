@@ -176,9 +176,12 @@ uber_dist_2015 %>% group_by(cluster_pickup) %>% dplyr::summarize(n = n())
 
 ```
 ```{r}
+library(units)
 #calculate direction of uber ride in degrees
 uber_dist_2015$direction <- atan2(sin( uber_dist_2015$dropoff_longitude_mod - uber_dist_2015$pickup_longitude_mod), 
                            cos( uber_dist_2015$dropoff_latitude_mod - uber_dist_2015$pickup_latitude_mod ))
+
+uber_dist_2015$direction <- uber_dist_2015$direction * (180 / pi)
 ```
 
 ```{r}
@@ -227,6 +230,11 @@ uber_dist_2015 <- uber_dist_2015 %>% mutate(prediction = round(predict(rf, type 
 ggplot(data=uber_dist_2015, aes(x=fare_amount, y = prediction)) + geom_point() + facet_wrap(~time_category) + geom_smooth(method = "lm")
 
 uber_dist_2015 %>% mutate(prediction = round(predict(rf, type = "response"),0)) %>% summarize(accuracy = mean(prediction == fare_amount_round))
+```
+```{r}
+#visualize whether direction impacts fare amount using a scatter plot
+ggplot(data = uber_dist_2015, aes(x = pickup_latitude_mod - dropoff_latitude_mod, y = pickup_longitude_mod - dropoff_longitude_mod)) + geom_point(aes(color=fare_amount)) +  scale_color_continuous() + labs(x="Delta Latitude", y="Delta Longitude") + geom_smooth(method="lm", color="red")
+
 ```
 
 
