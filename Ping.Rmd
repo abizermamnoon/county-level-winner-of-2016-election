@@ -21,7 +21,7 @@ lapply(mypacks, library, character.only=TRUE)  # load all packages
 
 
 ```{r}
-uber_fare <- read.csv("https://raw.githubusercontent.com/econ122-f22/finalproject-mpra/main/uber.csv?token=GHSAT0AAAAAABYHQA5VIH4RVH4FLYE5GUHQY44V5HA")
+uber_fare <- read.csv("https://raw.githubusercontent.com/econ122-f22/finalproject-mpra/main/uber.csv?token=GHSAT0AAAAAABYHQA5UHLLZYWZ5YT3SLLTGY446EDA")
 
 ```
 ```{r}
