@@ -1,202 +1,378 @@
-Final Team Project
+Undercovering Uber Price Predictors
 ================
 Abizer, Matthew, Ping, Rosy
 12/15/2022
 
-    Rows: 195,807
-    Columns: 19
-    $ ...1                  <dbl> 24238194, 27835199, 44984355, 25894730, 17610152…
-    $ key                   <dttm> 2015-05-07 19:52:06, 2009-07-17 20:04:56, 2009-…
-    $ fare_amount           <dbl> 7.5, 7.7, 12.9, 5.3, 16.0, 4.9, 24.5, 9.7, 12.5,…
-    $ pickup_datetime       <chr> "2015-05-07 19:52:06 UTC", "2009-07-17 20:04:56 …
-    $ pickup_longitude      <dbl> -73.99982, -73.99435, -74.00504, -73.97612, -73.…
-    $ pickup_latitude       <dbl> 40.73835, 40.72823, 40.74077, 40.79084, 40.74408…
-    $ dropoff_longitude     <dbl> -73.99951, -73.99471, -73.96256, -73.96532, -73.…
-    $ dropoff_latitude      <dbl> 40.72322, 40.75032, 40.77265, 40.80335, 40.76125…
-    $ passenger_count       <dbl> 1, 1, 1, 3, 5, 1, 5, 1, 1, 1, 5, 1, 1, 2, 1, 2, …
-    $ pickup_time           <chr> "19:52", "20:04", "21:45", "08:22", "17:47", "02…
-    $ pickup_year           <chr> "2015", "2009", "2009", "2009", "2014", "2011", …
-    $ pickup_month_dash     <chr> "-05-", "-07-", "-08-", "-06-", "-08-", "-02-", …
-    $ pickup_month          <chr> "05", "07", "08", "06", "08", "02", "10", "02", …
-    $ pickup_date_dash      <chr> "-05", "-07", "-08", "-06", "-08", "-02", "-10",…
-    $ pickup_date           <chr> "05", "07", "08", "06", "08", "02", "10", "02", …
-    $ pickup_longitude_mod  <dbl> -73.99982, -73.99435, -74.00504, -73.97612, -73.…
-    $ pickup_latitude_mod   <dbl> 40.73835, 40.72823, 40.74077, 40.79084, 40.74408…
-    $ dropoff_longitude_mod <dbl> -73.99951, -73.99471, -73.96256, -73.96532, -73.…
-    $ dropoff_latitude_mod  <dbl> 40.72322, 40.75032, 40.77265, 40.80335, 40.76125…
-          ...1               key                          fare_amount    
-     Min.   :       1   Min.   :2009-01-01 01:15:22.00   Min.   :-52.00  
-     1st Qu.:13831298   1st Qu.:2010-08-20 21:31:41.50   1st Qu.:  6.00  
-     Median :27751460   Median :2012-03-20 21:34:00.00   Median :  8.50  
-     Mean   :27712051   Mean   :2012-03-21 12:11:24.11   Mean   : 11.34  
-     3rd Qu.:41542689   3rd Qu.:2013-10-19 14:38:38.00   3rd Qu.: 12.50  
-     Max.   :55423567   Max.   :2015-06-30 23:40:39.00   Max.   :499.00  
-     pickup_datetime    pickup_longitude pickup_latitude dropoff_longitude
-     Length:195807      Min.   :-77.32   Min.   :40.33   Min.   :-75.42   
-     Class :character   1st Qu.:-73.99   1st Qu.:40.74   1st Qu.:-73.99   
-     Mode  :character   Median :-73.98   Median :40.75   Median :-73.98   
-                        Mean   :-73.98   Mean   :40.75   Mean   :-73.97   
-                        3rd Qu.:-73.97   3rd Qu.:40.77   3rd Qu.:-73.97   
-                        Max.   :-71.90   Max.   :42.48   Max.   :-71.72   
-     dropoff_latitude passenger_count   pickup_time        pickup_year       
-     Min.   :40.33    Min.   :  0.000   Length:195807      Length:195807     
-     1st Qu.:40.74    1st Qu.:  1.000   Class :character   Class :character  
-     Median :40.75    Median :  1.000   Mode  :character   Mode  :character  
-     Mean   :40.75    Mean   :  1.685                                        
-     3rd Qu.:40.77    3rd Qu.:  2.000                                        
-     Max.   :42.46    Max.   :208.000                                        
-     pickup_month_dash  pickup_month       pickup_date_dash   pickup_date       
-     Length:195807      Length:195807      Length:195807      Length:195807     
-     Class :character   Class :character   Class :character   Class :character  
-     Mode  :character   Mode  :character   Mode  :character   Mode  :character  
-                                                                                
-                                                                                
-                                                                                
-     pickup_longitude_mod pickup_latitude_mod dropoff_longitude_mod
-     Min.   :-77.32       Min.   :40.33       Min.   :-75.42       
-     1st Qu.:-73.99       1st Qu.:40.74       1st Qu.:-73.99       
-     Median :-73.98       Median :40.75       Median :-73.98       
-     Mean   :-73.98       Mean   :40.75       Mean   :-73.97       
-     3rd Qu.:-73.97       3rd Qu.:40.77       3rd Qu.:-73.97       
-     Max.   :-71.90       Max.   :42.48       Max.   :-71.72       
-     dropoff_latitude_mod
-     Min.   :40.33       
-     1st Qu.:40.74       
-     Median :40.75       
-     Mean   :40.75       
-     3rd Qu.:40.77       
-     Max.   :42.46       
+**Project Overview**
 
-    # A tibble: 13,528 × 10
-       fare_amount passeng…¹ picku…² picku…³ picku…⁴ picku…⁵ picku…⁶ picku…⁷ dropo…⁸
-             <dbl>     <dbl> <chr>   <chr>   <chr>   <chr>     <dbl>   <dbl>   <dbl>
-     1         7.5         1 19:52   2015    05      05         40.7   -74.0    40.7
-     2         6.5         1 17:32   2015    05      05         40.7   -74.0    40.7
-     3        12           1 08:58   2015    03      03         40.8   -74.0    40.8
-     4         5           2 23:15   2015    03      03         40.7   -74.0    40.7
-     5        12           1 09:17   2015    01      01         40.7   -74.0    40.8
-     6         9           1 17:52   2015    06      06         40.7   -74.0    40.7
-     7         8.5         2 11:19   2015    02      02         40.7   -74.0    40.8
-     8        21           1 14:56   2015    05      05         40.8   -74.0    40.8
-     9        11           1 13:31   2015    05      05         40.8   -74.0    40.8
-    10         3.5         2 01:35   2015    05      05         40.8   -74.0    40.7
-    # … with 13,518 more rows, 1 more variable: dropoff_longitude_mod <dbl>, and
-    #   abbreviated variable names ¹​passenger_count, ²​pickup_time, ³​pickup_year,
-    #   ⁴​pickup_month, ⁵​pickup_date, ⁶​pickup_latitude_mod, ⁷​pickup_longitude_mod,
-    #   ⁸​dropoff_latitude_mod
+Motivation: Uber fare can sometimes be unpredictable. Sometimes, a short
+1-mile ride from Upland College Park Apartment to Bauer Center cost
+around 70 dollars; other times, a 30-minute ride only cost 15 dollars.
+While these prices seem to make no sense at first glance, we believe
+there exists underlying explanations for the huge fluctuations in the
+Uber fares. In this project, we set our focus in New York City and use a
+data set that records information about 200,000 Uber rides in the City
+from 2009-2015. By using the tools learned in this class, such as data
+wrangling, ggplot, and machine learning models, on this dataset, we
+aimed to discover how the fares are determined - with what predictors
+and how important are these predictors?
 
-    Rows: 9,166
-    Columns: 11
-    $ fare_amount           <dbl> 7.50, 12.00, 12.00, 9.00, 8.50, 21.00, 11.00, 9.…
-    $ passenger_count       <dbl> 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 4, 2, 1, 6, 2, 1, …
-    $ pickup_time           <chr> "19:52", "08:58", "09:17", "17:52", "11:19", "14…
-    $ pickup_year           <chr> "2015", "2015", "2015", "2015", "2015", "2015", …
-    $ pickup_month          <chr> "05", "03", "01", "06", "02", "05", "05", "04", …
-    $ pickup_date           <chr> "05", "03", "01", "06", "02", "05", "05", "04", …
-    $ pickup_longitude_mod  <dbl> -73.99982, -73.96253, -73.97952, -73.97214, -73.…
-    $ pickup_latitude_mod   <dbl> 40.73835, 40.76719, 40.72731, 40.74989, 40.73622…
-    $ dropoff_longitude_mod <dbl> -73.99951, -73.97446, -73.98488, -73.98186, -73.…
-    $ dropoff_latitude_mod  <dbl> 40.72322, 40.75386, 40.76065, 40.73243, 40.76135…
-    $ distance              <dbl> 1.045240, 1.111678, 2.318986, 1.308611, 1.922588…
+**Objective:** Through this project, we wish to answer the following
+questions: 1. What are some of the important variables in determining
+uber fare? 2. Are there strategies uber users can use to minimize cost?
 
-![](Ping_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+Approach: To answer the above questions, we will take the following
+steps: 1. Clean the data a. Data wrangling b.Clustering to make
+continuous variable into categorical variable 2. Applying model to our
+dataset a. Random forest 3. Analyzing the model outcome
 
-    # A tibble: 3 × 2
-      cluster_assign     n
-      <chr>          <int>
-    1 1                296
-    2 2               5307
-    3 3               3563
+**Data**
 
-    Warning in region == c("new york", "new jersey"): longer object length is not a
-    multiple of shorter object length
+Data Description:
+
+The dataset is found on Kaggle:
+<https://www.kaggle.com/datasets/yasserh/uber-fares-dataset>
+
+The dataset is called Uber Fares Dataset. There are 200,000 samples and
+9 columns in the dataset. The columns include: key - a unique identifier
+for each trip fare_amount - the cost of each trip in usd
+pickup_datetime - date and time when the meter was engaged
+passenger_count - the number of passengers in the vehicle (driver
+entered value) pickup_longitude - the longitude where the meter was
+engaged pickup_latitude - the latitude where the meter was engaged
+dropoff_longitude - the longitude where the meter was disengaged
+dropoff_latitude - the latitude where the meter was disengaged
+
+Since key is just an identifier variable, we drop it from our
+predictors. Our dependent variable is fare_amount, all rest variables
+are the predictors. However, we recognize that in their current state,
+these predictors would result in too much noise when making predictions
+as they are in raw number form that might not make too much sense. Thus,
+we will first need to pre-process our predictors.
+
+**Variables Pre-processing**
+
+**Step one:** We begin by doing some simple operations to the below
+variable so they are easier for us to use later on for more complicated
+processing.
+
+Pickup_datetime: We chose to break down this variable into separate
+columns that extracted the pickup time, year, date, and month.
+
+**Step two:** We wish to remove the outliers to reduce noise and also
+narrow down our scope of analysis to 2015 data
+
+Location variables: We filtered the latitude and longitude coordinates
+to fit those of New York city because most of the coordinates in this
+dataset belong within the city. Those few that do not are outliers.
+Thus, we want to focus our study in this area only.
+
+Distance and Fare_amount:  
+We use the boxplot below to determine the range for outliers in these
+two variables. ![](Ping_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+Narrow down to 2015 data: As mentioned above, we cleaned our data when
+removing outliers. However, the dataset is still too big. Thus, we
+filtered by year and focused our analysis on 2015 only. We used year as
+the variable for data splitting since we believe the difference in fare
+caused by the different years reflects more of the general economy such
+as inflation and less of how Uber calculates its fare prices. Thus it is
+not a very crucial predictor, so we can ditch it and use it to divide
+data.
+
+**Step three:** After we simply the variables, we perform more
+complicated changes to them
+
+As of now, our predictors include: passenger count, pickup month, pickup
+date, pickup longitude, pickup latitude, dropoff longitude and dropoff
+latitude. We now further process them to make them cleaner predictors to
+the model. The process includes categorizing continuous variables and
+extracting useful information, such as distance, from existing
+variables.
+
+**1. Time Category:** As part of our research, we were interested in
+learning to predict uber fare prices at different times of the day so we
+included a time category column that categorized the pickup times into
+morning, afternoon, and night. We used the mutate function to categorize
+times between 0:01 and 12:00 as morning, times between 12:01 and 18:00
+as afternoon, and times between 18:01 and 24:00 as evening.
+
+**2. Distance (straight-line):** Our original dataset did not include
+the distances of each ride, but we recognized that distance is a crucial
+variable affecting fare price and created our own distance variable. To
+do this, we first wrote a distance conversion function that takes in a
+starting coordinate (in the form of latitude and longitude) and ending
+coordinate. Then, we perform some trigonometry calculations using the
+trig library in r. The function outputs the straight line distance
+between the 2 input coordinates. Using this function along with the
+mutate function, we create the new column with the pickup longitude and
+latitude and drop off longitude and latitude variables. However, note
+this function only outputs the straight line distance between 2 points,
+which might not exactly correctly reflect the distance traveled by the
+uber since roads are often indirect. This might mislead our model at
+times. For instance, consider the case where there are two rides: ride
+one with the straight line distance of 4 miles, ride two with straight
+line distance of 5 miles. However, ride two is mostly on a direct
+freeway and the actual distance is 6 miles. Yet ride one is entirely on
+city roads so the actual distance is 8 miles. As a result, our distance
+will tell us that ride one has a shorter distance but in reality ride
+two has the shorter distance. Since we expect distance to directly
+correlate with the fare, this might occasionally teach the model the
+false fact that a ride with shorter distance has a more expensive
+fare.However, even with the imperfection mentioned, we argue it is not
+detrimental to our prediction and the variable is still worth keeping
+for the following reasons: 1) our straight line distance is still
+correlated with the actual distance traveled. Ie. A ride with a shorter
+straight line distance between two points is more likely to have a
+shorter actual distance. 2) Since we control our ride to all within New
+York City, the type of roads the uber travels on are restricted to
+similar city roads. Thus, the difference between straight-line distance
+and actual distance is controlled. 3) Distance could be one of the most
+important variables in predicting fare amount as we expect distance to
+correlate directly with fare. Thus, having any distance information
+would be helpful to our prediction and explanation of the fare amount.
+With these reasons, we decide to keep this variable.
+
+**3. Pickup/Dropoff Clusters:** Looking at the pickup and dropoff
+coordinates, we realized that the coordinates themselves would not be
+very good predictors to give to a random forest model because it’s an
+area measure, which is relative. The random forest model is calculating
+how much more predictive the variable will be if the coordinate
+increases by 1, which is not very helpful. As a result, we believe it
+would be more accurate to group the coordinates in clusters to find a
+pattern with the trips. We did not have specific neighborhoods in our
+dataset, so we used k-means clustering to break up our data points into
+4 clusters. To determine our k value, we plotted a graph of the total
+within-cluster variation against different k values. Our graph suggested
+that k should be optimally 4 because a higher k value leads to an
+insignificant reduction in within-cluster variation.
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+    Warning: `data_frame()` was deprecated in tibble 1.1.0.
+    ℹ Please use `tibble()` instead.
+
+![](Ping_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
+
+    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5316300)
 
 ![](Ping_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
-uber_dist_mod2 \<- uber_dist %\>% filter(cluster_assign == “2”) %\>%
-select(dropoff_latitude_mod, dropoff_longitude_mod)
+Then, we visualized the k means clustering (based on pickup and dropoff
+clusters) on a map of New York City
 
+![](Ping_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->![](Ping_files/figure-gfm/unnamed-chunk-13-2.png)<!-- -->
+Through the map above, we can see the distribution of pickup and
+drop-off locations in New York in our dataset. Cluster 1 can be defined
+as Downtown and Brooklyn area, cluster 2 would be considered Queens,
+Cluster 3 would be defined as the Upper East Side and West Side
+stretching up to the Bronx and cluster 4 would be defined as Midtown.
+This is useful because it shows which areas of New York city our model
+will be useful for the most. However, the pickup and dropoff clusters do
+not tell us anything regarding direction.
 
+The question of whether uber rides are mostly within clusters or between
+clusters is still uncertain. Therefore, we created another set of maps
+(map 1 for pickup cluster 1, map 2 or pickup cluster 3, etc…).
 
-    #Cluster 2 Pickup= Mostly JFK airport and Queens
-    #Cluster 2 Dropoff = Literally everywhere in New York (Manhattan, Bronx, Long Island, Brooklyn) Not so much concentration at airports though
+![](Ping_files/figure-gfm/unnamed-chunk-14-1.png)<!-- --> For all maps,
+the black points are the pickup locations and the colored points are the
+corresponding dropoff locations. For map \#1, the pickup points are
+concentrated in cluster 4 (purple) and the dropoff locations are all
+over New York state and spread out evenly across the 4 clusters. For map
+\#2, the pickup points are centered around LaGuardia Airport and John F.
+Kennedy Airport, and the dropoff points are spread out across Queens,
+with a minority of dropoff points in Manhattan (specifically midtown
+Manhattan and the Bronx). Additionally, there are significantly fewer
+pick-up up locations in map 2, as represented by the lower density of
+black dots. For map 3, most of the pickup points are in cluster 1
+(orange) and the drop-off points are all over New York. For map \#4,
+most of the pickup points are in cluster 3 (blue) and dropoff points are
+also all over New York.
 
-    library(leaflet)
-    uber_dist_mod2 <- sample_frac(uber_dist_mod2, 1)
+    # A tibble: 4 × 2
+      cluster_pickup     n
+      <chr>          <int>
+    1 1               2499
+    2 2                 81
+    3 3               1804
+    4 4               3619
 
+The tibble above shows that most of the uber rides in this data set are
+within Manhattan, Queens, and Brooklyn (cluster 1, 3, and 4,
+respectively, rather than from airports)
 
+**4. Direction:** While the pickup and dropoff coordinates allowed us to
+compute the distance of the uber ride, we still had no numerical way to
+measure direction. The clustering was slightly more helpful in telling
+us direction, but its role was more visual than anything. So, we wanted
+to determine the relevance of direction for the calculation of fare
+amount. So, we created a scatter plot of the delta’s of the longitude
+and latitudes of coordinates, and colored them based on the fare amount.
+We also added a line of best fit to see if there was any sort of
+relationship for direction. As you can see the direction of the trip
+does matter. For reference, it is the direction of the trip from 180 to
+-180 degrees, and the horizontal axis is 0 degrees.
+![](Ping_files/figure-gfm/unnamed-chunk-17-1.png)<!-- --> Now that we
+knew distance was significant to some extent, we used the atan2()
+function, which takes the sine of the difference between the dropoff and
+pickup longitudes and latitudes, and the cosine of the difference
+between the dropoff and the pickup latitudes, and returns the arctangent
+of that result. This value represents the direction of the trip in
+radians. We then use mutate to assign this value to each of the uber
+rides in 2015.
 
-    map <- leaflet(data=uber_dist_mod2) %>% addTiles() %>% addMarkers(~dropoff_longitude_mod, ~dropoff_latitude_mod)
+**Individual Variable Impact**
 
-    map
+**Time of Day:** We further split the pickup times and categorized them
+based on time of day. The reason we did this was because we realized
+that there would likely be a higher demand for uber rides when people
+left for work in the morning, or when people head home (during rush
+hour). However, when we visualized the relationship between fare amount
+and distance, depending on time of day, it revealed that time does not
+have a lot of influence on fare amount.
 
-\#Cluster 1 pickup = Mostly Manhattan, some Bronx, some Brooklyn, and
-some LaGuardia (none JFK) \#Cluster 1 dropoff = Every in New York with
-focus on JFK and LaGuardia and Manhattan uber_dist_mod1 \<- uber_dist
-%\>% filter(cluster_assign == “1”) %\>% select(pickup_latitude_mod,
-pickup_longitude_mod)
+![](Ping_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
-uber_dist_mod1 \<- sample_frac(uber_dist_mod1, 0.5)
+**Cluster impact on fares:** Based on the graph above, fares in cluster
+2 are on average 5 dollars higher. At first glance, it seems that the
+obvious advice would be not to call an uber if an individual is in
+cluster 2, however, when we look at a map of where cluster 2 is mainly
+situated, we can see that the pickup points are mostly at LaGuardia
+Airport and John F. Kennedy Airport. Uber fare prices tend to be higher
+at airports, according to InsideHook (Your Uber Ride from the Airport
+May Get More Expensive. Here’s Why. - InsideHook). There are additional
+pickup and dropoff fees associated with specific airports, and supply
+and demand factors will also lead to increased fare prices. However, it
+would still be wise to take other forms of transportation such as train
+or bus to minimize cost.
 
-map \<- leaflet(data=uber_dist_mod1) %\>% addTiles() %\>%
-addMarkers(\~pickup_longitude_mod, \~pickup_latitude_mod)
+^ need graph for this?
 
-map
+**Analysis**
 
-
-
-    #cluster 3 Pickup= Manhttan, some Queens, some LaGuardia Airport 
-    #Cluster 3 Dropoff = Mostly Manhattan, Queens, and EWR airport                                                                                                                                                                                   
-
-    uber_dist_mod3 <- uber_dist %>% filter(cluster_assign == "3") %>% select(pickup_latitude_mod, pickup_longitude_mod)
-
-    uber_dist_mod3 <- sample_frac(uber_dist_mod3, 0.3)
-
-
-
-    map <- leaflet(data=uber_dist_mod3) %>% addTiles() %>% addMarkers(~pickup_longitude_mod, ~pickup_latitude_mod)
-
-    map
-
-![](Ping_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
-
-    Warning in tree(fare_amount ~ pickup_latitude_mod + pickup_longitude_mod + : NAs
-    introduced by coercion
-
-![](Ping_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
-
-
-    Regression tree:
-    tree(formula = fare_amount ~ pickup_latitude_mod + pickup_longitude_mod + 
-        dropoff_latitude_mod + dropoff_longitude_mod + distance + 
-        passenger_count + pickup_month + pickup_date + pickup_time, 
-        data = uber_dist_clean)
-    Variables actually used in tree construction:
-    [1] "distance"              "dropoff_longitude_mod"
-    Number of terminal nodes:  7 
-    Residual mean deviance:  22.76 = 208400 / 9156 
-    Distribution of residuals:
-        Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-    -31.1200  -2.2500  -0.7496   0.0000   1.7500  70.7700 
-
-![](Ping_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
-
-                            %IncMSE IncNodePurity
-    pickup_latitude_mod   22.655536    131278.942
-    pickup_longitude_mod  26.441583    184898.552
-    dropoff_latitude_mod  22.245867     87004.178
-    dropoff_longitude_mod 35.191917    171540.279
-    distance              66.901126    668801.347
-    passenger_count       -1.906674      3599.156
-    pickup_month           2.042090      5067.801
-    pickup_date            4.828704      5048.414
-    pickup_time           28.543642     23969.035
 
     Call:
-     randomForest(formula = fare_amount ~ pickup_latitude_mod + pickup_longitude_mod +      dropoff_latitude_mod + dropoff_longitude_mod + distance +      passenger_count + pickup_month + pickup_date + pickup_time,      data = uber_dist_clean, keep.forest = FALSE, importance = TRUE) 
+     randomForest(formula = fare_amount ~ pickup_latitude_mod + pickup_longitude_mod +      dropoff_latitude_mod + dropoff_longitude_mod + pickup_time +      distance + direction + passenger_count + pickup_month + pickup_date,      data = uber_dist_2015, ntree = 250, mtry = 7) 
                    Type of random forest: regression
-                         Number of trees: 500
-    No. of variables tried at each split: 3
+                         Number of trees: 250
+    No. of variables tried at each split: 7
 
-              Mean of squared residuals: 15.1325
-                        % Var explained: 89.31
+              Mean of squared residuals: 5.643251
+                        % Var explained: 72.25
+                          IncNodePurity
+    pickup_latitude_mod        5497.597
+    pickup_longitude_mod       5180.171
+    dropoff_latitude_mod       8952.499
+    dropoff_longitude_mod      5893.595
+    pickup_time               10305.220
+    distance                 102694.673
+    direction                 17308.001
+    passenger_count            1251.353
+    pickup_month               1404.739
+    pickup_date                1423.948
+
+Model result Determine which predictors to use and training our model
+
+The random forest call above shows the output of our random forest model
+trained on the 2015 data set. We used this output to determine which
+predictors we should use in our final random forest model. Based on the
+increased node purity column, we determined that passenger count, pickup
+month, and pickup date were the least important variables, and should be
+removed in our final model. Pickup month and pickup date were not that
+significant probably because it was too general of a predictor.
+Passenger count was also rather insignificant because, according to
+uber, they do not charge more for additional passengers, up to 4
+passengers. In our data set, passenger counts of over 4 (5 or 6
+passengers) only accounted for 9% of the total uber rides. Looking at
+the importance of longitude and latitude, it is interesting to see that
+latitude had a higher increase in node purity than longitude. Then is
+supported by the by that our k means clustering model grouped the
+coordinates more horizontally (by latitude) rather than vertically. The
+clusters split Manhattan into 3 sections (downtown, midtown, and uptown,
+with some of the clustering spread towards Brooklyn and Queens).
+
+
+    Call:
+     randomForest(formula = fare_amount ~ pickup_latitude_mod + pickup_longitude_mod +      dropoff_latitude_mod + dropoff_longitude_mod + pickup_time +      distance + direction, data = uber_dist_2015, ntree = 250,      mtry = 7) 
+                   Type of random forest: regression
+                         Number of trees: 250
+    No. of variables tried at each split: 7
+
+              Mean of squared residuals: 5.780961
+                        % Var explained: 71.58
+
+This random forest call uses the new selected predictors (based on
+importance)
+
+**Final Conclusion:**
+
+In conclusion, through our analysis of fare price with respect to
+distance, pickup and dropoff location and time, we were able to get a
+better understanding of the main determinants of how much an Uber ride
+costs in New York. By separating the pickup and dropoff locations into
+multiple clusters we were able to clean the longitude and latitude data
+to fit a more generalized sorting. We were then able to calculate the
+distribution of rides from each cluster to their respective
+destinations. In our graph, we saw that there was a relatively low
+amount of ride traffic from the Queens district compared to Manhattan.
+From a fare cost minimizing perspective, we would recommend avoiding
+taking uber rides to and from the airport. Other modes of transportation
+such as trains or buses would be more cost effective for leaving and
+going to the airport. However, when traveling within Manhattan, there
+wasn’t a significant cost mitigation strategy. We didn’t find any
+noticeable trends of time and direction that consequently increased or
+decreased fare price dramatically. In our random forest model, we were
+able to obtain a relatively high R2 of 72.24% when predicting fare price
+based on pickup longitude, dropoff longitude, pickup time, distance,
+direcion, pickup cluster and dropoff cluster. As we hypothesized,
+distance was the most important predictor of fare cost. However,
+direction and longitude coordinates were also very important forecasters
+of fare price. This was largely due to the importance of these variables
+in determining which cluster a passenger is traveling to. Because our
+clustering was conducted vertically, the longitude coordinates were able
+to help us identify which cluster the rider was picked up and dropped
+off at. Though we were able to find high correlation between our
+explanatory variables and fare prices, a few methods have been taken to
+improve our analysis. We could have obtained the actual road paths of
+rides to gain a better understanding of which roads were taken and how
+that affects fare cost. Additionally, we could have included weather
+data to determine if there is any correlation between weather conditions
+and fare prices. Furthermore, we could have included supply and demand
+data to analyze how many people were trying to call a ride at a certain
+time versus how many drivers were available to take them. This could
+have provided us with more insight on how surge pricing affects the fare
+price of an Uber ride. Overall we felt confident about our analysis and
+felt we were able to provide significant insight into what factors
+affect Uber Prices in the City through a combination of a random forest
+model and visualizations such as mapping.
