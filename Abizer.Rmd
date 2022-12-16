@@ -13,7 +13,7 @@ knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE,comment=NULL,message=FALSE, ech
 
 
 ```{r packageCheck, include=FALSE}
-mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma","leaflet", "maps", "rgdal", "rgeos","leaflet", "tree","doParallel","foreach","ggmap")  # what packages are needed?
+mypacks <- c("ggplot2","dplyr","readr","tidyr", "ROCR", "boot","class","randomForest","e1071", "stringr","partykit","rpart","plyr","pracma","leaflet", "maps", "rgdal", "rgeos","leaflet", "tree","doParallel","foreach","ggmap","geosphere")  # what packages are needed?
 packs <- installed.packages()   # find installed package list
 install.me <- mypacks[!(mypacks %in% packs[,"Package"])]  #what needs to be installed?
 if (length(install.me) >= 1) install.packages(install.me, repos = "http://cran.us.r-project.org")   # install (if needed)
@@ -312,12 +312,12 @@ uber_dist_2015 <- uber_dist_2015 %>% mutate(prediction = round(predict(rf, type 
 ```
 This random forest call uses the new selected predictors (based on importance)
 
-```{r}
+
 #random forest on 2014 data (test)
 uber_dist_2014 <- sample_frac(uber_dist_2014, 0.45438028728779878498836086981207) # run this line of code once so 2014 and 2015 data sets are the same size, then delete it
+uber_dist_2014 <- as.data.frame(uber_dist_2014)
+uber_dist_2014 <- uber_dist_2014 %>% mutate(pred_2014 = round(predict(rf, type = "response"),0)) 
 
-uber_dist_2014 <- uber_dist_2014 %>% mutate(pred_2014 = round(predict(rf, type = "response"),0))
-```
 
 **Final Conclusion:**
 
