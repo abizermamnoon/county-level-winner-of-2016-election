@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE,comment=NULL,message=FALSE, echo = FALSE, include=TRUE, fig.width = 9, fig.height = 4) #This code chunk ensures that there are no commands in output file.
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE,comment=NULL,message=FALSE, echo = FALSE, include=TRUE, warnings = FALSE, fig.width = 9, fig.height = 4) #This code chunk ensures that there are no commands in output file.
 ```
 
 
@@ -73,7 +73,6 @@ uber_dist <- uber_fare_mod %>% mutate(distance = dist_conversion(pickup_latitude
 ```
 
 ```{r}
-uber_dist %>% select(distance, fare_amount) %>% gather(key = variable, value = value, distance:fare_amount) %>% ggplot(aes(x = variable, y = value)) + geom_boxplot() + facet_wrap(~variable, scales="free")+ ggtitle("Boxplots of Distance & Fare_amount") # drew a boxplot of distances and fare amounts in boxplot
 
 #filter out distance outliers
 Q1 <- quantile(uber_dist$distance, .25)
@@ -165,18 +164,7 @@ As of now, our predictors include: passenger count, pickup month, pickup date, p
 
 **3. Pickup/Dropoff Clusters:** Looking at the pickup and dropoff coordinates, we realized that the coordinates themselves would not be very good predictors to give to a random forest model because it's an area measure, which is relative. The random forest model is calculating how much more predictive the variable will be if the coordinate increases by 1, which is not very helpful. As a result, we believe it would be more accurate to group the coordinates in clusters to find a pattern with the trips. We did not have specific neighborhoods in our dataset, so we used k-means clustering to break up our data points into 4 clusters. To determine our k value, we plotted a graph of the total within-cluster variation against different k values. Our graph suggested that k should be optimally 4 because a higher k value leads to an insignificant reduction in within-cluster variation. 
 
-```{r eval = "FALSE"}
-k<- 1:10
 
-#cluster for pickup
-set.seed(11)
-
-total.Wss.pickup <- sapply(k, function(x) kmeans(uber_dist_cleaner[,7:8], centers=x, nstart=20)$tot.withinss)
-
-ggplot(data_frame(total.Wss.pickup, k), aes(x=k,y=total.Wss.pickup)) + geom_point() + geom_line() + scale_x_continuous(breaks=1:10)
-
-#graphed total within cluster variation against k to compute optimal k
-```
 ```{r}
 #cluster for dropoff
 k<- 1:10
@@ -274,17 +262,23 @@ Now that we knew distance was significant to some extent, we used the atan2() fu
 
 **Individual Variable Impact**
 
-**Time of Day:** We further split the pickup times and categorized them based on time of day. The reason we did this was because we realized that there would likely be a higher demand for uber rides when people left for work in the morning, or when people head home (during rush hour). However, when we visualized the relationship between fare amount and distance, depending on time of day, it revealed that time does not have a lot of influence on fare amount. 
-
 ```{r}
 #after creating a scatter plot of the fare amount and distance, facet wrapped based on time category, we can see that there is a linear relationship between those 2 variables. The horizontal lines on the scatter plot may represent fixed prices for specific locations in New York. 
 ggplot(data=uber_dist_2015, aes(x=distance, y = fare_amount)) + geom_point() + facet_wrap(~time_category) + geom_smooth(method = "lm")
 
 ```
 
+**Time of Day:** We further split the pickup times and categorized them based on time of day. The reason we did this was because we realized that there would likely be a higher demand for uber rides when people left for work in the morning, or when people head home (during rush hour). However, when we visualized the relationship between fare amount and distance, depending on time of day, it revealed that time does not have a lot of influence on fare amount. 
+
+
+
+```{r}
+uber_dist_2015 %>% group_by(cluster_pickup) %>% dplyr::summarize(average_fare = mean(fare_amount)) %>% ggplot(aes(x=cluster_pickup, y = average_fare)) + geom_bar(stat = "identity")
+```
+
 **Cluster impact on fares:** Based on the graph above, fares in cluster 2 are on average 5 dollars higher. At first glance, it seems that the obvious advice would be not to call an uber if an individual is in cluster 2, however, when we look at a map of where cluster 2 is mainly situated, we can see that the pickup points are mostly at LaGuardia Airport and John F. Kennedy Airport. Uber fare prices tend to be higher at airports, according to InsideHook (Your Uber Ride from the Airport May Get More Expensive. Here's Why. - InsideHook). There are additional pickup and dropoff fees associated with specific airports, and supply and demand factors will also lead to increased fare prices. However, it would still be wise to take other forms of transportation such as train or bus to minimize cost.
 
-^ need graph for this?
+
 ```{r}
 # determine distribution of passenger counts
 passenger_counts <- uber_dist_2015 %>% group_by(passenger_count) %>% dplyr::summarize(n = n())
@@ -311,12 +305,6 @@ rf
 uber_dist_2015 <- uber_dist_2015 %>% mutate(prediction = round(predict(rf, type = "response"),0)) 
 ```
 This random forest call uses the new selected predictors (based on importance)
-
-
-#random forest on 2014 data (test)
-uber_dist_2014 <- sample_frac(uber_dist_2014, 0.45438028728779878498836086981207) # run this line of code once so 2014 and 2015 data sets are the same size, then delete it
-uber_dist_2014 <- as.data.frame(uber_dist_2014)
-uber_dist_2014 <- uber_dist_2014 %>% mutate(pred_2014 = round(predict(rf, type = "response"),0)) 
 
 
 **Final Conclusion:**

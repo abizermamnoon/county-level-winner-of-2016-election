@@ -8,8 +8,6 @@ Abizer, Matthew, Ping, Rosy
     Warning in pickup_time > 18:0: longer object length is not a multiple of shorter
     object length
 
-![](Abizer_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
-
 **Project Overview**
 
 Motivation: Uber fare can sometimes be unpredictable. Sometimes, a short
@@ -156,31 +154,15 @@ insignificant reduction in within-cluster variation.
     Warning: Quick-TRANSfer stage steps exceeded maximum (= 5326550)
 
     Warning: Quick-TRANSfer stage steps exceeded maximum (= 5326550)
-
-    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5326550)
-
-    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5326550)
-
-    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5326550)
-
-    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5326550)
-
-    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5326550)
     Warning: `data_frame()` was deprecated in tibble 1.1.0.
     ℹ Please use `tibble()` instead.
 
 ![](Abizer_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
-    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5326550)
-
-    Warning: Quick-TRANSfer stage steps exceeded maximum (= 5326550)
-
-![](Abizer_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
-
 Then, we visualized the k means clustering (based on pickup and dropoff
 clusters) on a map of New York City
 
-![](Abizer_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->![](Abizer_files/figure-gfm/unnamed-chunk-13-2.png)<!-- -->
+![](Abizer_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->![](Abizer_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
 Through the map above, we can see the distribution of pickup and
 drop-off locations in New York in our dataset. Cluster 1 can be defined
 as Downtown and Brooklyn area, cluster 2 would be considered Queens,
@@ -194,7 +176,7 @@ The question of whether uber rides are mostly within clusters or between
 clusters is still uncertain. Therefore, we created another set of maps
 (map 1 for pickup cluster 1, map 2 or pickup cluster 3, etc…).
 
-![](Abizer_files/figure-gfm/unnamed-chunk-14-1.png)<!-- --> For all
+![](Abizer_files/figure-gfm/unnamed-chunk-13-1.png)<!-- --> For all
 maps, the black points are the pickup locations and the colored points
 are the corresponding dropoff locations. For map \#1, the pickup points
 are concentrated in cluster 4 (purple) and the dropoff locations are all
@@ -234,7 +216,7 @@ We also added a line of best fit to see if there was any sort of
 relationship for direction. As you can see the direction of the trip
 does matter. For reference, it is the direction of the trip from 180 to
 -180 degrees, and the horizontal axis is 0 degrees.
-![](Abizer_files/figure-gfm/unnamed-chunk-17-1.png)<!-- --> Now that we
+![](Abizer_files/figure-gfm/unnamed-chunk-16-1.png)<!-- --> Now that we
 knew distance was significant to some extent, we used the atan2()
 function, which takes the sine of the difference between the dropoff and
 pickup longitudes and latitudes, and the cosine of the difference
@@ -244,6 +226,8 @@ radians. We then use mutate to assign this value to each of the uber
 rides in 2015.
 
 **Individual Variable Impact**
+
+![](Abizer_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
 
 **Time of Day:** We further split the pickup times and categorized them
 based on time of day. The reason we did this was because we realized
@@ -267,8 +251,6 @@ pickup and dropoff fees associated with specific airports, and supply
 and demand factors will also lead to increased fare prices. However, it
 would still be wise to take other forms of transportation such as train
 or bus to minimize cost.
-
-^ need graph for this?
 
 **Analysis**
 
@@ -325,13 +307,6 @@ with some of the clustering spread towards Brooklyn and Queens).
 
 This random forest call uses the new selected predictors (based on
 importance)
-
-\#random forest on 2014 data (test) uber_dist_2014 \<-
-sample_frac(uber_dist_2014, 0.45438028728779878498836086981207) \# run
-this line of code once so 2014 and 2015 data sets are the same size,
-then delete it uber_dist_2014 \<- as.data.frame(uber_dist_2014)
-uber_dist_2014 \<- uber_dist_2014 %\>% mutate(pred_2014 =
-round(predict(rf, type = “response”),0))
 
 **Final Conclusion:**
 
