@@ -75,14 +75,17 @@ Thus, we want to focus our study in this area only.
 Distance and Fare_amount:  
 We use the boxplot below to determine the range for outliers in these
 two variables.
-![](Abizer_files/figure-gfm/unnamed-chunk-8-1.png)<!-- --> Narrow down
-to 2015 data: As mentioned above, we cleaned our data when removing
-outliers. However, the dataset is still too big. Thus, we filtered by
-year and focused our analysis on 2015 only. We used year as the variable
-for data splitting since we believe the difference in fare caused by the
-different years reflects more of the general economy such as inflation
-and less of how Uber calculates its fare prices. Thus it is not a very
-crucial predictor, so we can ditch it and use it to divide data.
+
+![](Abizer_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+
+Narrow down to 2015 data: As mentioned above, we cleaned our data when
+removing outliers. However, the dataset is still too big. Thus, we
+filtered by year and focused our analysis on 2015 only. We used year as
+the variable for data splitting since we believe the difference in fare
+caused by the different years reflects more of the general economy such
+as inflation and less of how Uber calculates its fare prices. Thus it is
+not a very crucial predictor, so we can ditch it and use it to divide
+data.
 
 **Step three:** After we simply the variables, we perform more
 complicated changes to them
@@ -163,33 +166,35 @@ Then, we visualized the k means clustering (based on pickup and dropoff
 clusters) on a map of New York City
 
 ![](Abizer_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->![](Abizer_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
+
 Through the map above, we can see the distribution of pickup and
-drop-off locations in New York in our dataset. Cluster 1 can be defined
-as Downtown and Brooklyn area, cluster 2 would be considered Queens,
-Cluster 3 would be defined as the Upper East Side and West Side
-stretching up to the Bronx and cluster 4 would be defined as Midtown.
-This is useful because it shows which areas of New York city our model
-will be useful for the most. However, the pickup and dropoff clusters do
-not tell us anything regarding direction.
+drop-off locations in New York in our dataset. Bottom most can be
+defined as Downtown and Brooklyn area, ones to the right would be
+considered Queens, top most would be defined as the Upper East Side and
+West Side stretching up to the Bronx and the sandwiched one would be
+defined as Midtown. This is useful because it shows which areas of New
+York city our model will be useful for the most. However, the pickup and
+dropoff clusters do not tell us anything regarding direction.
 
 The question of whether uber rides are mostly within clusters or between
 clusters is still uncertain. Therefore, we created another set of maps
 (map 1 for pickup cluster 1, map 2 or pickup cluster 3, etc…).
 
-![](Abizer_files/figure-gfm/unnamed-chunk-13-1.png)<!-- --> For all
-maps, the black points are the pickup locations and the colored points
-are the corresponding dropoff locations. For map \#1, the pickup points
-are concentrated in cluster 4 (purple) and the dropoff locations are all
-over New York state and spread out evenly across the 4 clusters. For map
-\#2, the pickup points are centered around LaGuardia Airport and John F.
-Kennedy Airport, and the dropoff points are spread out across Queens,
-with a minority of dropoff points in Manhattan (specifically midtown
-Manhattan and the Bronx). Additionally, there are significantly fewer
-pick-up up locations in map 2, as represented by the lower density of
-black dots. For map 3, most of the pickup points are in cluster 1
-(orange) and the drop-off points are all over New York. For map \#4,
-most of the pickup points are in cluster 3 (blue) and dropoff points are
-also all over New York.
+![](Abizer_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+For all maps, the black points are the pickup locations and the colored
+points are the corresponding dropoff locations. For map where the pickup
+points are concentrated in Downtown and Brooklyn area, the dropoff
+locations are all over New York state and spread out evenly across the 4
+clusters. For map where the pickup points are centered around LaGuardia
+Airport and John F. Kennedy Airport, the dropoff points are spread out
+across Queens, with a minority of dropoff points in Manhattan
+(specifically midtown Manhattan and the Bronx). Additionally, there are
+significantly fewer pick-up up locations in Queens, as represented by
+the lower density of black dots. For map where most of the pickup points
+are in Upper East Side and West Side stretching up to the Bronx the
+drop-off points are all over New York. For map where most of the pickup
+points are in Midtown the dropoff points are also all over New York.
 
     # A tibble: 4 × 2
       cluster_pickup     n
@@ -200,8 +205,7 @@ also all over New York.
     4 4                 81
 
 The tibble above shows that most of the uber rides in this data set are
-within Manhattan, Queens, and Brooklyn (cluster 1, 3, and 4,
-respectively, rather than from airports)
+within Manhattan, Queens, and Brooklyn
 
     Warning: package 'units' was built under R version 4.2.2
 
@@ -216,14 +220,16 @@ We also added a line of best fit to see if there was any sort of
 relationship for direction. As you can see the direction of the trip
 does matter. For reference, it is the direction of the trip from 180 to
 -180 degrees, and the horizontal axis is 0 degrees.
-![](Abizer_files/figure-gfm/unnamed-chunk-16-1.png)<!-- --> Now that we
-knew distance was significant to some extent, we used the atan2()
-function, which takes the sine of the difference between the dropoff and
-pickup longitudes and latitudes, and the cosine of the difference
-between the dropoff and the pickup latitudes, and returns the arctangent
-of that result. This value represents the direction of the trip in
-radians. We then use mutate to assign this value to each of the uber
-rides in 2015.
+
+![](Abizer_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+
+Now that we knew distance was significant to some extent, we used the
+atan2() function, which takes the sine of the difference between the
+dropoff and pickup longitudes and latitudes, and the cosine of the
+difference between the dropoff and the pickup latitudes, and returns the
+arctangent of that result. This value represents the direction of the
+trip in radians. We then use mutate to assign this value to each of the
+uber rides in 2015.
 
 **Individual Variable Impact**
 
@@ -239,18 +245,18 @@ have a lot of influence on fare amount.
 
 ![](Abizer_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
-**Cluster impact on fares:** Based on the graph above, fares in cluster
-2 are on average 5 dollars higher. At first glance, it seems that the
+**Cluster impact on fares:** Based on the graph above, fares in Queens
+are on average 5 dollars higher. At first glance, it seems that the
 obvious advice would be not to call an uber if an individual is in
-cluster 2, however, when we look at a map of where cluster 2 is mainly
-situated, we can see that the pickup points are mostly at LaGuardia
-Airport and John F. Kennedy Airport. Uber fare prices tend to be higher
-at airports, according to InsideHook (Your Uber Ride from the Airport
-May Get More Expensive. Here’s Why. - InsideHook). There are additional
-pickup and dropoff fees associated with specific airports, and supply
-and demand factors will also lead to increased fare prices. However, it
-would still be wise to take other forms of transportation such as train
-or bus to minimize cost.
+cluster Queens, however, when we look at a map of Queens, we can see
+that the pickup points are mostly at LaGuardia Airport and John F.
+Kennedy Airport. Uber fare prices tend to be higher at airports,
+according to InsideHook (Your Uber Ride from the Airport May Get More
+Expensive. Here’s Why. - InsideHook). There are additional pickup and
+dropoff fees associated with specific airports, and supply and demand
+factors will also lead to increased fare prices. However, it would still
+be wise to take other forms of transportation such as train or bus to
+minimize cost.
 
 **Analysis**
 

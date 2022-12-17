@@ -22,7 +22,7 @@ lapply(mypacks, library, character.only=TRUE)  # load all packages
 
 
 ```{r}
-uber_fare <- read_csv("C:/Users/munee/Desktop/econ122/finalproject-mpra/uber.csv") #Data is stored in uber_csv
+uber_fare <- read_csv("C:/Users/munee/Desktop/econ122/finalproject-mpra/uber.csv") #import dataset from https://www.kaggle.com/datasets/yasserh/uber-fares-dataset and store in uber_csv
 ```
 
 
@@ -145,9 +145,11 @@ We filtered the latitude and longitude coordinates to fit those of New York city
 
 Distance and Fare_amount:  
 We use the boxplot below to determine the range for outliers in these two variables. 
+
 ```{r}
 uber_dist %>% select(distance, fare_amount) %>% gather(key = variable, value = value, distance:fare_amount) %>% ggplot(aes(x = variable, y = value)) + geom_boxplot() + facet_wrap(~variable, scales="free")+ ggtitle("Boxplots of Distance & Fare_amount") # drew a boxplot of distances and fare amounts in boxplot
 ```
+
 Narrow down to 2015 data:
 As mentioned above, we cleaned our data when removing outliers. However, the dataset is still too big. Thus, we filtered by year and focused our analysis on 2015 only. We used year as the variable for data splitting since we believe the difference in fare caused by the different years reflects more of the general economy such as inflation and less of how Uber calculates its fare prices. Thus it is not a very crucial predictor, so we can ditch it and use it to divide data.
 
@@ -166,10 +168,13 @@ As of now, our predictors include: passenger count, pickup month, pickup date, p
 
 
 ```{r}
+
+set.seed(7)
+
 #cluster for dropoff
 k<- 1:10
 
-set.seed(11)
+
 
 total.Wss.dropoff <- sapply(k, function(x) kmeans(uber_dist_cleaner[,9:10], centers=x, nstart=20)$tot.withinss)
 
@@ -178,6 +183,7 @@ ggplot(data_frame(total.Wss.dropoff, k), aes(x=k,y=total.Wss.dropoff)) + geom_po
 
 ```{r}
 set.seed(7)
+
 km_out_pickup <- kmeans(uber_dist_cleaner[,7:8], centers = 4, nstart = 20) #ran the k-means model to create 4 clusters of data using 20 random starting points
 uber_dist_cleaner <- uber_dist_cleaner %>% mutate(cluster_pickup = as.character(km_out_pickup$cluster))
 #cluster group for pickup
@@ -188,15 +194,17 @@ uber_dist_cleaner <- uber_dist_cleaner %>% mutate(cluster_dropoff = as.character
 ```
 
 
-
 ```{r}
 uber_dist_2015 <- uber_dist_cleaner %>% filter(pickup_year=="2015")
 uber_dist_2014 <- uber_dist_cleaner %>% filter(pickup_year=="2014")
 #Create 2015 and 2014 data for analysis
 ```
+
 Then, we visualized the k means clustering (based on pickup and dropoff clusters) on a map of New York City
 
 ```{r}
+set.seed(7)
+
 library(ggmap)
 
 #Create maps to visualize clustering for pickup and dropoff
@@ -210,12 +218,14 @@ base_map_dropoff <- ggmap(get_googlemap(center = c(-73.908285, 40.713000), zoom 
 
 base_map_dropoff + geom_point(data = uber_dist_2015, aes(x = dropoff_longitude_mod, y = dropoff_latitude_mod, color = cluster_dropoff), size = 1)
 ```
-Through the map above, we can see the distribution of pickup and drop-off locations in New York in our dataset. Cluster 1 can be defined as Downtown and Brooklyn area, cluster 2 would be considered Queens, Cluster 3 would be defined as the Upper East Side and West Side stretching up to the Bronx and cluster 4 would be defined as Midtown. This is useful because it shows which areas of New York city our model will be useful for the most. However, the pickup and dropoff clusters do not tell us anything regarding direction. 
+
+Through the map above, we can see the distribution of pickup and drop-off locations in New York in our dataset. Bottom most can be defined as Downtown and Brooklyn area, ones to the right would be considered Queens, top most would be defined as the Upper East Side and West Side stretching up to the Bronx and the sandwiched one would be defined as Midtown. This is useful because it shows which areas of New York city our model will be useful for the most. However, the pickup and dropoff clusters do not tell us anything regarding direction. 
 
 The question of whether uber rides are mostly within clusters or between clusters is still uncertain. Therefore, we created another set of maps (map 1 for pickup cluster 1, map 2 or pickup cluster 3, etc…). 
 
 ```{r}
 #plot where the uber rides are going depending on pickup cluster (represented by black)
+set.seed(7)
 
 base_map_path<- ggmap(get_googlemap(center = c(-73.958285, 40.723000), zoom = 10))
 
@@ -227,15 +237,18 @@ base_map_path +
     geom_point(data = uber_dist_2015, aes(x = pickup_longitude_mod, y = pickup_latitude_mod), size = 1, alpha = 0.5) + facet_wrap(~cluster_pickup)
   
 ```
-For all maps, the black points are the pickup locations and the colored points are the corresponding dropoff locations. For map #1, the pickup points are concentrated in cluster 4 (purple) and the dropoff locations are all over New York state and spread out evenly across the 4 clusters. For map #2, the pickup points are centered around LaGuardia Airport and John F. Kennedy Airport, and the dropoff points are spread out across Queens, with a minority of dropoff points in Manhattan (specifically midtown Manhattan and the Bronx). Additionally, there are significantly fewer pick-up up locations in map 2, as represented by the lower density of black dots. For map 3, most of the pickup points are in cluster 1 (orange) and the drop-off points are all over New York. For map #4, most of the pickup points are in cluster 3 (blue) and dropoff points are also all over New York. 
+
+For all maps, the black points are the pickup locations and the colored points are the corresponding dropoff locations. For map where the pickup points are concentrated in Downtown and Brooklyn area, the dropoff locations are all over New York state and spread out evenly across the 4 clusters. For map where the pickup points are centered around LaGuardia Airport and John F. Kennedy Airport, the dropoff points are spread out across Queens, with a minority of dropoff points in Manhattan (specifically midtown Manhattan and the Bronx). Additionally, there are significantly fewer pick-up up locations in Queens, as represented by the lower density of black dots. For map where most of the pickup points are in Upper East Side and West Side stretching up to the Bronx the drop-off points are all over New York. For map where most of the pickup points are in Midtown the dropoff points are also all over New York. 
 
 
 ```{r}
+set.seed(7)
 #look at which clusters are largest
 uber_dist_2015 %>% group_by(cluster_pickup) %>% dplyr::summarize(n = n())
 
 ```
-The tibble above shows that most of the uber rides in this data set are within Manhattan, Queens, and Brooklyn (cluster 1, 3, and 4, respectively, rather than from airports)
+
+The tibble above shows that most of the uber rides in this data set are within Manhattan, Queens, and Brooklyn 
 
 ```{r}
 library(units)
@@ -250,12 +263,15 @@ uber_dist_2014$direction <- atan2(sin( uber_dist_2014$dropoff_longitude_mod - ub
 
 uber_dist_2014$direction <- uber_dist_2014$direction * (180 / pi)
 ```
+
 **4. Direction:** While the pickup and dropoff coordinates allowed us to compute the distance of the uber ride, we still had no numerical way to measure direction. The clustering was slightly more helpful in telling us direction, but its role was more visual than anything. So, we wanted to determine the relevance of direction for the calculation of fare amount. So, we created a scatter plot of the delta’s of the longitude and latitudes of coordinates, and colored them based on the fare amount. We also added a line of best fit to see if there was any sort of relationship for direction. As you can see the direction of the trip does matter. For reference, it is the direction of the trip from 180 to -180 degrees, and the horizontal axis is 0 degrees.
+
 ```{r}
 #visualize whether direction impacts fare amount using a scatter plot
 ggplot(data = uber_dist_2015, aes(x = pickup_latitude_mod - dropoff_latitude_mod, y = pickup_longitude_mod - dropoff_longitude_mod)) + geom_point(aes(color=fare_amount)) +  scale_color_continuous() + labs(x="Delta Latitude", y="Delta Longitude") + geom_smooth(method="lm", color="red")
 
 ```
+
 Now that we knew distance was significant to some extent, we used the atan2() function, which takes the sine of the difference between the dropoff and pickup longitudes and latitudes, and the cosine of the difference between the dropoff and the pickup latitudes, and returns the arctangent of that result. This value represents the direction of the trip in radians. We then use mutate to assign this value to each of the uber rides in 2015. 
 
 
@@ -271,12 +287,13 @@ ggplot(data=uber_dist_2015, aes(x=distance, y = fare_amount)) + geom_point() + f
 **Time of Day:** We further split the pickup times and categorized them based on time of day. The reason we did this was because we realized that there would likely be a higher demand for uber rides when people left for work in the morning, or when people head home (during rush hour). However, when we visualized the relationship between fare amount and distance, depending on time of day, it revealed that time does not have a lot of influence on fare amount. 
 
 
-
 ```{r}
-uber_dist_2015 %>% group_by(cluster_pickup) %>% dplyr::summarize(average_fare = mean(fare_amount)) %>% ggplot(aes(x=cluster_pickup, y = average_fare)) + geom_bar(stat = "identity")
+set.seed(7)
+
+uber_dist_2015 %>% group_by(cluster_pickup) %>% dplyr::summarize(average_fare = mean(fare_amount)) %>% ggplot(aes(x=cluster_pickup, y = average_fare)) + geom_bar(stat = "identity") 
 ```
 
-**Cluster impact on fares:** Based on the graph above, fares in cluster 2 are on average 5 dollars higher. At first glance, it seems that the obvious advice would be not to call an uber if an individual is in cluster 2, however, when we look at a map of where cluster 2 is mainly situated, we can see that the pickup points are mostly at LaGuardia Airport and John F. Kennedy Airport. Uber fare prices tend to be higher at airports, according to InsideHook (Your Uber Ride from the Airport May Get More Expensive. Here's Why. - InsideHook). There are additional pickup and dropoff fees associated with specific airports, and supply and demand factors will also lead to increased fare prices. However, it would still be wise to take other forms of transportation such as train or bus to minimize cost.
+**Cluster impact on fares:** Based on the graph above, fares in Queens are on average 5 dollars higher. At first glance, it seems that the obvious advice would be not to call an uber if an individual is in cluster Queens, however, when we look at a map of Queens, we can see that the pickup points are mostly at LaGuardia Airport and John F. Kennedy Airport. Uber fare prices tend to be higher at airports, according to InsideHook (Your Uber Ride from the Airport May Get More Expensive. Here's Why. - InsideHook). There are additional pickup and dropoff fees associated with specific airports, and supply and demand factors will also lead to increased fare prices. However, it would still be wise to take other forms of transportation such as train or bus to minimize cost.
 
 
 ```{r}
@@ -284,7 +301,9 @@ uber_dist_2015 %>% group_by(cluster_pickup) %>% dplyr::summarize(average_fare = 
 passenger_counts <- uber_dist_2015 %>% group_by(passenger_count) %>% dplyr::summarize(n = n())
 passenger_counts <- uber_dist_2014 %>% group_by(passenger_count) %>% dplyr::summarize(n = n())
 ```
+
 **Analysis** 
+
 ```{r}
 #random forest to determine importance()
 set.seed(1231)
@@ -297,6 +316,7 @@ Model result
 Determine which predictors to use and training our model
 
 The random forest call above shows the output of our random forest model trained on the 2015 data set. We used this output to determine which predictors we should use in our final random forest model. Based on the increased node purity column, we determined that passenger count, pickup month, and pickup date were the least important variables, and should be removed in our final model. Pickup month and pickup date were not that significant probably because it was too general of a predictor. Passenger count was also rather insignificant because, according to uber, they do not charge more for additional passengers, up to 4 passengers. In our data set, passenger counts of over 4 (5 or 6 passengers) only accounted for 9% of the total uber rides. Looking at the importance of longitude and latitude, it is interesting to see that latitude had a higher increase in node purity than longitude. Then is supported by the by that our k means clustering model grouped the coordinates more horizontally (by latitude) rather than vertically. The clusters split Manhattan into 3 sections (downtown, midtown, and uptown, with some of the clustering spread towards Brooklyn and Queens). 
+
 ```{r}
 #random forest on new predictors
 set.seed(1231)
@@ -304,6 +324,7 @@ rf <- randomForest(fare_amount ~ pickup_latitude_mod+pickup_longitude_mod+ dropo
 rf
 uber_dist_2015 <- uber_dist_2015 %>% mutate(prediction = round(predict(rf, type = "response"),0)) 
 ```
+
 This random forest call uses the new selected predictors (based on importance)
 
 
